@@ -3,7 +3,7 @@
 This project helps compile Tor into a static lib for use in other projects.
 
 The dependencies are in this repository as submodules so this repository needs to be cloned with `--recursive`. The
-dependencies are:
+submodules are:
 
 * [OpenSSL](https://github.com/openssl/openssl/) - Checked out at tag `OpenSSL_1_0_2o`
 * [Libevent](https://github.com/libevent/libevent) - Checked out at tag `release-2.1.8-stable`
@@ -11,24 +11,28 @@ dependencies are:
 * [XZ Utils](https://git.tukaani.org/?p=xz.git) - Checked out at tag `v5.2.4`
 * [Tor](https://github.com/torproject/tor) - Checked out at tag `tor-0.3.3.5-rc`
 
-## Building
-
-TODO: At some point, automate this with a build script per platform.
-
-### Linux
-
-TODO (should be mostly straightforward using some of the Windows commands below)
-
-## macOS
-
-TODO (should be mostly straightforward using some of the Windows commands below)
-
-### Windows
-
 Many many bugs and quirks were hit while deriving these steps. Also many other repos, mailing lists, etc were leveraged
 to get some of the pieces right. They are not listed here for brevity reasons.
 
-#### Msys2 and MinGW Setup
+## Building
+
+### Prerequisites
+
+All platform need Go installed and on the PATH.
+
+#### Linux
+
+Need normal build tools
+
+NOTE: Linux is untested
+
+#### macOS
+
+Need normal build tools
+
+NOTE: macOS is untested
+
+#### Windows
 
 Tor is not really designed to work well with MSVC so we use MinGW instead. Since we are statically compiling, this means
 we use the MinGW form of Rust too. In order to compile the dependencies, Msys2 + MinGW should be installed.
@@ -56,91 +60,15 @@ of packages due to a bug in the current MinGW libraries. In the same shell, run:
 At least these were the cached package names on my install, they may be different on others. Once complete, MinGW is now
 setup to build the dependencies.
 
-#### Clone Repo
+### Executing the build
 
-Inside the mingw-64 shell, clone this repo and submodules:
+In the cloned directory, run:
 
-    git clone --recursive https://github.com/cretz/tor-static.git
+    go run build.go build-all
 
-Then you can `cd tor-static`. We will assume throughout this guide that you are starting at the cloned root.
-
-#### OpenSSL
-
-Inside the mingw-64 shell, navigate to the OpenSSL folder and build it:
-
-    cd openssl
-    ./Configure --prefix=$PWD/dist no-shared no-dso no-zlib mingw64
-    make depend
-    make
-    make install
-
-This will put OpenSSL libs at `dist/lib`.
-
-#### Libevent
-
-Inside the mingw-64 shell, navigate to the Libevent folder and build it:
-
-    cd libevent
-    ./autogen.sh
-    ./configure --prefix=$PWD/dist --disable-shared --enable-static --with-pic
-    make
-    make install
-
-This will put Libevent libs at `dist/lib`.
-
-#### zlib
-
-Inside the mingw-64 shell, navigate to the zlib folder and build it:
-
-    cd zlib
-    PREFIX=$PWD/dist make -fwin32/Makefile.gcc
-    PREFIX=$PWD/dist BINARY_PATH=$PWD/dist/bin INCLUDE_PATH=$PWD/dist/include LIBRARY_PATH=$PWD/dist/lib make install -fwin32/Makefile.gcc
-
-This will put zlib libs at `dist/lib`.
-
-#### XZ Utils
-
-Inside the mingw-64 shell, navigate to the XZ Utils folder and build it:
-
-    cd xz
-    ./autogen.sh
-    ./configure --prefix=$PWD/dist \
-                --disable-shared \
-                --enable-static \
-                --disable-doc \
-                --disable-scripts \
-                --disable-xz \
-                --disable-xzdec \
-                --disable-lzmadec \
-                --disable-lzmainfo \
-                --disable-lzma-links
-    make
-    make install
-
-This will put XZ Utils libs at `dist/lib`.
-
-#### Tor
-
-Inside the mingw-64 shell, navigate to the tor folder and build it:
-
-    cd tor
-    ./autogen.sh
-    LIBS=-lcrypt32 ./configure --prefix=$PWD/dist \
-                                --disable-gcc-hardening \
-                                --enable-static-tor \
-                                --enable-static-libevent \
-                                --with-libevent-dir=$PWD/../libevent/dist \
-                                --enable-static-openssl \
-                                --with-openssl-dir=$PWD/../openssl/dist \
-                                --enable-static-zlib \
-                                --with-zlib-dir=$PWD/../openssl/dist \
-                                --disable-system-torrc \
-                                --disable-asciidoc
-    ln -s $PWD/../zlib/dist/lib/libz.a $PWD/../openssl/dist/lib/libz.a
-    make
-    make install
-
-This will put Tor libs throughout the `src` area.
+This will take a long time. Pieces can be built individually be changing the command from `build-all` to
+`build-<folder>`. To clean, run either `clean-all` or `clean-<folder>`. To see the output of all the commands as they
+are being run, add `-verbose` before the command.
 
 ## Using
 
