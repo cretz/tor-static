@@ -34,8 +34,8 @@ NOTE: macOS is untested
 
 #### Windows
 
-Tor is not really designed to work well with MSVC so we use MinGW instead. Since we are statically compiling, this means
-we use the MinGW form of Rust too. In order to compile the dependencies, Msys2 + MinGW should be installed.
+Tor is not really designed to work well with MSVC so we use MinGW instead. In order to compile the dependencies,
+Msys2 + MinGW should be installed.
 
 Download and install the latest [MSYS2 64-bit](http://www.msys2.org/) that uses the `MinGW-w64` toolchains. Once
 installed, open the "MSYS MinGW 64-bit" shell link that was created. Once in the shell, run:
@@ -66,7 +66,7 @@ In the cloned directory, run:
 
     go run build.go build-all
 
-This will take a long time. Pieces can be built individually be changing the command from `build-all` to
+This will take a long time. Pieces can be built individually by changing the command from `build-all` to
 `build-<folder>`. To clean, run either `clean-all` or `clean-<folder>`. To see the output of all the commands as they
 are being run, add `-verbose` before the command.
 
