@@ -92,6 +92,6 @@ prefix of ".a" extension. When using something like `ld` or `LDFLAGS`, the direc
 
 The OS-specific system libs that have to be referenced (i.e. `-l<libname>`) are:
 
-* Linux - TODO
+* Linux - `m`
 * macOS - TODO
 * Windows (MinGW) - `ws2_32`, `crypt32`, and `gdi32`
