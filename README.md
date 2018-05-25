@@ -22,9 +22,11 @@ All platform need Go installed and on the PATH.
 
 #### Linux
 
-Need normal build tools
+Need:
 
-NOTE: Linux is untested
+* Normal build tools (e.g. `sudo apt-get install build-essential`)
+* Libtool (e.g. `sudo apt-get install libtool`)
+* autopoint (e.g. `sudo apt-get install autopoint`)
 
 #### macOS
 

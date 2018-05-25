@@ -121,13 +121,14 @@ func build(folder string) error {
 		return nil
 	case "openssl":
 		cmds := [][]string{
-			{"sh", "./Configure", "--prefix=" + pwd + "/dist", "no-shared", "no-dso", "no-zlib"},
+			{"sh", "./config", "--prefix=" + pwd + "/dist", "no-shared", "no-dso", "no-zlib"},
 			{"make", "depend"},
 			{"make"},
 			{"make", "install"},
 		}
 		if runtime.GOOS == "windows" {
 			cmds[0] = append(cmds[0], "mingw64")
+			cmds[0][1] = "./Configure"
 		}
 		return runCmds(folder, nil, cmds)
 	case "libevent":
@@ -139,12 +140,12 @@ func build(folder string) error {
 			{"make", "install"},
 		})
 	case "zlib":
-		env := []string{"PREFIX=" + pwd + "/dist", "BINARY_PATH=" + pwd + "/dist/bin",
-			"INCLUDE_PATH=" + pwd + "/dist/include", "LIBRARY_PATH=" + pwd + "/dist/lib"}
-		cmds := [][]string{{"make"}, {"make", "install"}}
+		var env []string
+		cmds := [][]string{{"sh", "./configure", "--prefix=" + pwd + "/dist"}, {"make"}, {"make", "install"}}
 		if runtime.GOOS == "windows" {
-			cmds[0] = append(cmds[0], "-fwin32/Makefile.gcc")
-			cmds[1] = append(cmds[1], "-fwin32/Makefile.gcc")
+			env = []string{"PREFIX=" + pwd + "/dist", "BINARY_PATH=" + pwd + "/dist/bin",
+				"INCLUDE_PATH=" + pwd + "/dist/include", "LIBRARY_PATH=" + pwd + "/dist/lib"}
+			cmds = [][]string{{"make", "-fwin32/Makefile.gcc"}, {"make", "install", "-fwin32/Makefile.gcc"}}
 		}
 		return runCmds(folder, env, cmds)
 	case "xz":
@@ -164,7 +165,11 @@ func build(folder string) error {
 				return fmt.Errorf("Unable to make symlink: %v", err)
 			}
 		}
-		return runCmds(folder, []string{"LIBS=-lcrypt32"}, [][]string{
+		var env []string
+		if runtime.GOOS == "windows" {
+			env = []string{"LIBS=-lcrypt32"}
+		}
+		return runCmds(folder, env, [][]string{
 			{"sh", "-l", "./autogen.sh"},
 			{"sh", "./configure", "--prefix=" + pwd + "/dist", "--disable-gcc-hardening", "--enable-static-tor",
 				"--enable-static-libevent", "--with-libevent-dir=" + pwd + "/../libevent/dist", "--enable-static-openssl",
