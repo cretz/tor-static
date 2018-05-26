@@ -14,11 +14,13 @@ import (
 )
 
 var verbose bool
+var autopointPath string
 var folders = []string{"openssl", "libevent", "zlib", "xz", "tor"}
 var absCurrDir = getAbsCurrDir()
 
 func main() {
 	flag.BoolVar(&verbose, "verbose", false, "Whether to show command output")
+	flag.StringVar(&autopointPath, "autopoint-path", "/usr/local/opt/gettext/bin", "OSX: Directory that contains autopoint binary")
 	flag.Parse()
 	if len(flag.Args()) != 1 {
 		log.Fatal("Missing command. Can be build-all, build-<folder>, clean-all, or clean-<folder>")
@@ -114,7 +116,7 @@ func build(folder string) error {
 	switch folder {
 	case "all":
 		for _, subFolder := range folders {
-			if err := clean(subFolder); err != nil {
+			if err := build(subFolder); err != nil {
 				return err
 			}
 		}
@@ -129,13 +131,17 @@ func build(folder string) error {
 		if runtime.GOOS == "windows" {
 			cmds[0] = append(cmds[0], "mingw64")
 			cmds[0][1] = "./Configure"
+		} else if runtime.GOOS == "darwin" {
+			cmds[0] = append(cmds[0], "darwin64-x86_64-cc")
+			cmds[0][1] = "./Configure"
 		}
 		return runCmds(folder, nil, cmds)
 	case "libevent":
 		return runCmds(folder, nil, [][]string{
 			{"sh", "-l", "./autogen.sh"},
 			{"sh", "./configure", "--prefix=" + pwd + "/dist",
-				"--disable-shared", "--enable-static", "--with-pic"},
+				"--disable-shared", "--enable-static", "--with-pic",
+				"CPPFLAGS=-I../openssl/dist/include", "LDFLAGS=-L../openssl/dist/lib"},
 			{"make"},
 			{"make", "install"},
 		})
@@ -149,7 +155,11 @@ func build(folder string) error {
 		}
 		return runCmds(folder, env, cmds)
 	case "xz":
-		return runCmds(folder, nil, [][]string{
+		var env []string
+		if runtime.GOOS == "darwin" {
+			env = []string{"PATH=" + autopointPath + ":" + os.Getenv("PATH")}
+		}
+		return runCmds(folder, env, [][]string{
 			{"sh", "-l", "./autogen.sh"},
 			{"sh", "./configure", "--prefix=" + pwd + "/dist", "--disable-shared", "--enable-static",
 				"--disable-doc", "--disable-scripts", "--disable-xz", "--disable-xzdec", "--disable-lzmadec",
@@ -166,15 +176,21 @@ func build(folder string) error {
 			}
 		}
 		var env []string
+		var torConf []string
 		if runtime.GOOS == "windows" {
 			env = []string{"LIBS=-lcrypt32"}
 		}
+		torConf = []string{"sh", "./configure", "--prefix=" + pwd + "/dist",
+			"--disable-gcc-hardening", "--disable-system-torrc", "--disable-asciidoc",
+			"--enable-static-libevent", "--with-libevent-dir=" + pwd + "/../libevent/dist",
+			"--enable-static-openssl", "--with-openssl-dir=" + pwd + "/../openssl/dist",
+			"--enable-static-zlib", "--with-zlib-dir=" + pwd + "/../openssl/dist"}
+		if runtime.GOOS != "darwin" {
+			torConf = append(torConf, "--enable-static-tor")
+		}
 		return runCmds(folder, env, [][]string{
 			{"sh", "-l", "./autogen.sh"},
-			{"sh", "./configure", "--prefix=" + pwd + "/dist", "--disable-gcc-hardening", "--enable-static-tor",
-				"--enable-static-libevent", "--with-libevent-dir=" + pwd + "/../libevent/dist", "--enable-static-openssl",
-				"--with-openssl-dir=" + pwd + "/../openssl/dist", "--enable-static-zlib",
-				"--with-zlib-dir=" + pwd + "/../openssl/dist", "--disable-system-torrc", "--disable-asciidoc"},
+			torConf,
 			{"make"},
 			{"make", "install"},
 		})
