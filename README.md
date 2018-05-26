@@ -18,7 +18,7 @@ to get some of the pieces right. They are not listed here for brevity reasons.
 
 ### Prerequisites
 
-All platform need Go installed and on the PATH.
+All platforms need Go installed and on the PATH.
 
 #### Linux
 
@@ -30,12 +30,13 @@ Need:
 
 #### macOS
 
-* Need normal build tools (e.g Xcode command line tools)
-* libtool (e.g. `brew install libtool`)
-* autoconf and automake (e.g. `brew install automake`)
-* autopoint can be found in gettext (e.g. `brew install gettext`)
+Need:
 
-NOTE: macOS is untested
+* Normal build tools (e.g. Xcode command line tools)
+* Libtool (e.g. `brew install libtool`)
+* Autoconf and Automake (e.g. `brew install automake`)
+* autopoint (can be found in gettext, e.g. `brew install gettext`)
+  * Note, by default this is assumed to be at `/usr/local/opt/gettext/bin`. Use `-autopoint-path` to change it.
 
 #### Windows
 
@@ -95,6 +96,5 @@ prefix of ".a" extension. When using something like `ld` or `LDFLAGS`, the direc
 
 The OS-specific system libs that have to be referenced (i.e. `-l<libname>`) are:
 
-* Linux - `m`
-* macOS - TODO
+* Linux/macOS - `m`
 * Windows (MinGW) - `ws2_32`, `crypt32`, and `gdi32`
