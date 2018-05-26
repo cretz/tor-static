@@ -30,7 +30,10 @@ Need:
 
 #### macOS
 
-Need normal build tools
+* Need normal build tools (e.g Xcode command line tools)
+* libtool (e.g. `brew install libtool`)
+* autoconf and automake (e.g. `brew install automake`)
+* autopoint can be found in gettext (e.g. `brew install gettext`)
 
 NOTE: macOS is untested
 
