@@ -55,16 +55,8 @@ up to date. Then in the same mingw-64 shell, run:
                         git subversion mercurial \
                         mingw-w64-i686-cmake mingw-w64-x86_64-cmake
 
-This will install all the tools needed for building and will take a while. Once complete, we have to downgrade a couple
-of packages due to a bug in the current MinGW libraries. In the same shell, run:
-
-    pacman -U /var/cache/pacman/pkg/mingw-w64-x86_64-crt-git-5.0.0.4745.d2384c2-1-any.pkg.tar.xz
-    pacman -U /var/cache/pacman/pkg/mingw-w64-x86_64-headers-git-5.0.0.4747.0f8f626-1-any.pkg.tar.xz
-    pacman -U /var/cache/pacman/pkg/mingw-w64-x86_64-winpthreads-git-5.0.0.4741.2c8939a-1-any.pkg.tar.xz \
-              /var/cache/pacman/pkg/mingw-w64-x86_64-libwinpthread-git-5.0.0.4741.2c8939a-1-any.pkg.tar.xz
-
-At least these were the cached package names on my install, they may be different on others. Once complete, MinGW is now
-setup to build the dependencies.
+This will install all the tools needed for building and will take a while. Once complete, MinGW is now setup to build 
+the dependencies.
 
 ### Executing the build
 
