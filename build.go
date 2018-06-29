@@ -113,7 +113,7 @@ func build(folder string) error {
 		return runCmds(folder, nil, [][]string{
 			{"sh", "-l", "./autogen.sh"},
 			{"sh", "./configure", "--prefix=" + pwd + "/dist",
-				"--disable-shared", "--enable-static", "--with-pic",
+				"--disable-shared", "--enable-static", "--with-pic", "--disable-samples", "--disable-libevent-regress",
 				"CPPFLAGS=-I../openssl/dist/include", "LDFLAGS=-L../openssl/dist/lib"},
 			{"make"},
 			{"make", "install"},
