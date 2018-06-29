@@ -71,33 +71,6 @@ func validateEnvironment() error {
 		} else if !bytes.HasPrefix(byts, []byte("MINGW64")) {
 			return fmt.Errorf("This has to be run in a MSYS or MinGW64 shell")
 		}
-		// Have to have downgraded specific packages (TODO: fix when MinGW is fixed)
-		confirmPackage := func(pkg string, vers string) error {
-			if byts, err := exec.Command("pacman", "-Q", pkg).CombinedOutput(); err != nil {
-				return fmt.Errorf("Failed running pacman to check packages: %v", err)
-			} else if !bytes.Equal([]byte(pkg+" "+vers), bytes.TrimSpace(byts)) {
-				return fmt.Errorf("Expected '%v %v' got '%v'. Must downgrade some packages for MinGW to work. Use:\n"+
-					"    pacman -U /var/cache/pacman/pkg/mingw-w64-x86_64-crt-git-5.0.0.4745.d2384c2-1-any.pkg.tar.xz\n"+
-					"    pacman -U /var/cache/pacman/pkg/mingw-w64-x86_64-headers-git-5.0.0.4747.0f8f626-1-any.pkg.tar.xz\n"+
-					"    pacman -U /var/cache/pacman/pkg/mingw-w64-x86_64-winpthreads-git-5.0.0.4741.2c8939a-1-any.pkg.tar.xz\n"+
-					"    pacman -U /var/cache/pacman/pkg/mingw-w64-x86_64-libwinpthread-git-5.0.0.4741.2c8939a-1-any.pkg.tar.xz",
-					pkg, vers, bytes.TrimSpace(byts))
-			}
-			return nil
-		}
-		err := confirmPackage("mingw-w64-x86_64-crt-git", "5.0.0.4745.d2384c2-1")
-		if err == nil {
-			err = confirmPackage("mingw-w64-x86_64-headers-git", "5.0.0.4747.0f8f626-1")
-		}
-		if err == nil {
-			err = confirmPackage("mingw-w64-x86_64-winpthreads-git", "5.0.0.4741.2c8939a-1")
-		}
-		if err == nil {
-			err = confirmPackage("mingw-w64-x86_64-libwinpthread-git", "5.0.0.4741.2c8939a-1")
-		}
-		if err != nil {
-			return err
-		}
 	case "linux":
 		// Make sure it's not MinGW
 		if byts, err := exec.Command("uname", "-a").CombinedOutput(); err != nil {
