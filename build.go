@@ -23,7 +23,7 @@ func main() {
 	flag.StringVar(&autopointPath, "autopoint-path", "/usr/local/opt/gettext/bin", "OSX: Directory that contains autopoint binary")
 	flag.Parse()
 	if len(flag.Args()) != 1 {
-		log.Fatal("Missing command. Can be build-all, build-<folder>, clean-all, or clean-<folder>")
+		log.Fatal("Missing command. Can be build-all, build-<folder>, clean-all, clean-<folder>, or show-libs")
 	}
 	if err := run(flag.Args()[0]); err != nil {
 		log.Fatal(err)
@@ -38,8 +38,10 @@ func run(cmd string) error {
 		return build(cmd[6:])
 	} else if strings.HasPrefix(cmd, "clean-") {
 		return clean(cmd[6:])
+	} else if cmd == "show-libs" {
+		return showLibs()
 	}
-	return fmt.Errorf("Invalid command: %v. Should be build-all, build-<folder>, clean-all, or clean-<folder>", cmd)
+	return fmt.Errorf("Invalid command: %v. Should be build-all, build-<folder>, clean-all, clean-<folder>, or show-libs", cmd)
 }
 
 func getAbsCurrDir() string {
@@ -103,6 +105,7 @@ func build(folder string) error {
 		}
 		if runtime.GOOS == "windows" {
 			cmds[0] = append(cmds[0], "mingw64")
+			cmds[0][0] = "perl"
 			cmds[0][1] = "./Configure"
 		} else if runtime.GOOS == "darwin" {
 			cmds[0] = append(cmds[0], "darwin64-x86_64-cc")
@@ -151,7 +154,9 @@ func build(folder string) error {
 		var env []string
 		var torConf []string
 		if runtime.GOOS == "windows" {
-			env = []string{"LIBS=-lcrypt32"}
+			// This was only -lcrypt32 but the configure script for Tor puts that before -lssl and -lcrypto which
+			// we have learned, emperically, is required after those so we put all three here
+			env = []string{"LIBS=-lssl -lcrypto -lcrypt32 -lgdi32 -lws2_32"}
 		}
 		torConf = []string{"sh", "./configure", "--prefix=" + pwd + "/dist",
 			"--disable-gcc-hardening", "--disable-system-torrc", "--disable-asciidoc",
@@ -232,4 +237,48 @@ func runCmd(folder string, env []string, cmd string, args ...string) error {
 		c.Stderr = os.Stderr
 	}
 	return c.Run()
+}
+
+func showLibs() error {
+	// Ask Tor for their libs
+	cmd := exec.Command("make", "show-libs")
+	cmd.Dir = "tor"
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Failed 'make show-libs' in tor: %v", err)
+	}
+	// Key is dir
+	libSets := [][]string{}
+	for _, lib := range strings.Split(strings.TrimSpace(string(out)), " ") {
+		dir, file := path.Split(lib)
+		dir = path.Join("tor", dir)
+		file = strings.TrimPrefix(strings.TrimSuffix(file, ".a"), "lib")
+		found := false
+		for i, libSet := range libSets {
+			if libSet[0] == dir {
+				libSets[i] = append(libSets[i], file)
+				found = true
+				break
+			}
+		}
+		if !found {
+			libSets = append(libSets, []string{dir, file})
+		}
+	}
+	// Add the rest of the known libs
+	libSets = append(libSets,
+		[]string{"libevent/dist/lib", "event"},
+		[]string{"xz/dist/lib", "lzma"},
+		[]string{"zlib/dist/lib", "z"},
+		[]string{"openssl/dist/lib", "ssl", "crypto"},
+	)
+	// Dump em
+	for _, libSet := range libSets {
+		fmt.Print("-L" + libSet[0])
+		for _, lib := range libSet[1:] {
+			fmt.Print(" -l" + lib)
+		}
+		fmt.Println()
+	}
+	return nil
 }
