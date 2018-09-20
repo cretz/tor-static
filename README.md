@@ -5,7 +5,7 @@ This project helps compile Tor into a static lib for use in other projects.
 The dependencies are in this repository as submodules so this repository needs to be cloned with `--recursive`. The
 submodules are:
 
-* [OpenSSL](https://github.com/openssl/openssl/) - Checked out at tag `OpenSSL_1_0_2o`
+* [OpenSSL](https://github.com/openssl/openssl/) - Checked out at tag `OpenSSL_1_1_0i`
 * [Libevent](https://github.com/libevent/libevent) - Checked out at tag `release-2.1.8-stable`
 * [zlib](https://github.com/madler/zlib) - Checked out at tag `v1.2.11`
 * [XZ Utils](https://git.tukaani.org/?p=xz.git) - Checked out at tag `v5.2.4`
