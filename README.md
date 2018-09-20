@@ -70,21 +70,13 @@ are being run, add `-verbose` before the command.
 
 ## Using
 
-Once the libs have been compiled, they can be used to link with your program. Below is the list of each dir (relative to
-this repository root) and the library names inside the dirs. Library names are just the filenames without the "lib"
-prefix of ".a" extension. When using something like `ld` or `LDFLAGS`, the directories (i.e. `-L<dir>`) and the libs
-(i.e. `-l<libname>`) must be given in the order below:
+Once the libs have been compiled, they can be used to link with your program. Due to recent refactorings within the Tor
+source, the libraries are not listed here but instead listed when executing:
 
-* `tor/src/or` - `tor`
-* `tor/src/common` - `or`, `or-crypto`, `curve25519_donna`, `or-ctime`, and `or-event`
-* `tor/src/trunnel` - `or-trunnel`
-* `tor/src/ext/keccak-tiny` - `keccak-tiny`
-* `tor/src/ext/ed25519/ref10` - `ed25519_ref10`
-* `tor/src/ext/ed25519/donna` - `ed25519_donna`
-* `libevent/dist/lib` - `event`
-* `xz/dist/lib` - `lzma`
-* `zlib/dist/lib` - `z`
-* `openssl/dist/lib` - `ssl`, and `crypto`
+    go run build.go show-libs
+
+This lists directories (relative, prefixed with `-L`) followed by lib names (file sans `lib` prefix and sans `.a`
+extension, prefixed with `-l`) as might be used in `ld`.
 
 The OS-specific system libs that have to be referenced (i.e. `-l<libname>`) are:
 
