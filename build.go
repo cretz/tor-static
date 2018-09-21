@@ -105,7 +105,6 @@ func build(folder string) error {
 		}
 		if runtime.GOOS == "windows" {
 			cmds[0] = append(cmds[0], "mingw64")
-			cmds[0][0] = "perl"
 			cmds[0][1] = "./Configure"
 		} else if runtime.GOOS == "darwin" {
 			cmds[0] = append(cmds[0], "darwin64-x86_64-cc")
@@ -154,9 +153,7 @@ func build(folder string) error {
 		var env []string
 		var torConf []string
 		if runtime.GOOS == "windows" {
-			// This was only -lcrypt32 but the configure script for Tor puts that before -lssl and -lcrypto which
-			// we have learned, emperically, is required after those so we put all three here
-			env = []string{"LIBS=-lssl -lcrypto -lcrypt32 -lgdi32 -lws2_32"}
+			env = []string{"LIBS=-lcrypt32 -lgdi32"}
 		}
 		torConf = []string{"sh", "./configure", "--prefix=" + pwd + "/dist",
 			"--disable-gcc-hardening", "--disable-system-torrc", "--disable-asciidoc",
