@@ -14,6 +14,9 @@ submodules are:
 Many many bugs and quirks were hit while deriving these steps. Also many other repos, mailing lists, etc were leveraged
 to get some of the pieces right. They are not listed here for brevity reasons.
 
+**Note: Other versions of Tor may be available via tags (for current or previous versions) and branches (for future
+versions)**
+
 ## Building
 
 ### Prerequisites
