@@ -149,10 +149,10 @@ func build(folder string) error {
 				return fmt.Errorf("Unable to make symlink: %v", err)
 			}
 		}
-		var env []string
+		var env = []string{"LDFLAGS=-s"}
 		var torConf []string
 		if runtime.GOOS == "windows" {
-			env = []string{"LIBS=-lcrypt32"}
+			env = append(env, "LIBS=-lcrypt32")
 		}
 		torConf = []string{"sh", "./configure", "--prefix=" + pwd + "/dist",
 			"--disable-gcc-hardening", "--disable-system-torrc", "--disable-asciidoc",
