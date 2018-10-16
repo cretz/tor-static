@@ -159,7 +159,7 @@ func build(folder string) error {
 			"--enable-static-libevent", "--with-libevent-dir=" + pwd + "/../libevent/dist",
 			"--enable-static-openssl", "--with-openssl-dir=" + pwd + "/../openssl/dist",
 			"--enable-static-zlib", "--with-zlib-dir=" + pwd + "/../openssl/dist",
-			"--disable-systemd", "--disable-lzma"}
+			"--disable-systemd", "--disable-lzma", "--disable-seccomp"}
 		if runtime.GOOS != "darwin" {
 			torConf = append(torConf, "--enable-static-tor")
 		}
