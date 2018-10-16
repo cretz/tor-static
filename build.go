@@ -157,7 +157,8 @@ func build(folder string) error {
 			"--disable-gcc-hardening", "--disable-system-torrc", "--disable-asciidoc",
 			"--enable-static-libevent", "--with-libevent-dir=" + pwd + "/../libevent/dist",
 			"--enable-static-openssl", "--with-openssl-dir=" + pwd + "/../openssl/dist",
-			"--enable-static-zlib", "--with-zlib-dir=" + pwd + "/../openssl/dist"}
+			"--enable-static-zlib", "--with-zlib-dir=" + pwd + "/../openssl/dist",
+			"--disable-systemd", "--disable-lzma"}
 		if runtime.GOOS != "darwin" {
 			torConf = append(torConf, "--enable-static-tor")
 		}
