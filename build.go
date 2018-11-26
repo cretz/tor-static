@@ -17,6 +17,7 @@ var verbose bool
 var autopointPath string
 var folders = []string{"openssl", "libevent", "zlib", "xz", "tor"}
 var absCurrDir = getAbsCurrDir()
+var numJobs = fmt.Sprintf("-j%d", runtime.NumCPU())
 
 func main() {
 	flag.BoolVar(&verbose, "verbose", false, "Whether to show command output")
@@ -100,7 +101,7 @@ func build(folder string) error {
 		cmds := [][]string{
 			{"sh", "./config", "--prefix=" + pwd + "/dist", "no-shared", "no-dso", "no-zlib"},
 			{"make", "depend"},
-			{"make"},
+			{"make", numJobs},
 			{"make", "install"},
 		}
 		if runtime.GOOS == "windows" {
@@ -117,12 +118,12 @@ func build(folder string) error {
 			{"sh", "./configure", "--prefix=" + pwd + "/dist",
 				"--disable-shared", "--enable-static", "--with-pic", "--disable-samples", "--disable-libevent-regress",
 				"CPPFLAGS=-I../openssl/dist/include", "LDFLAGS=-L../openssl/dist/lib"},
-			{"make"},
+			{"make", numJobs},
 			{"make", "install"},
 		})
 	case "zlib":
 		var env []string
-		cmds := [][]string{{"sh", "./configure", "--prefix=" + pwd + "/dist"}, {"make"}, {"make", "install"}}
+		cmds := [][]string{{"sh", "./configure", "--prefix=" + pwd + "/dist"}, {"make", numJobs}, {"make", "install"}}
 		if runtime.GOOS == "windows" {
 			env = []string{"PREFIX=" + pwd + "/dist", "BINARY_PATH=" + pwd + "/dist/bin",
 				"INCLUDE_PATH=" + pwd + "/dist/include", "LIBRARY_PATH=" + pwd + "/dist/lib"}
@@ -139,7 +140,7 @@ func build(folder string) error {
 			{"sh", "./configure", "--prefix=" + pwd + "/dist", "--disable-shared", "--enable-static",
 				"--disable-doc", "--disable-scripts", "--disable-xz", "--disable-xzdec", "--disable-lzmadec",
 				"--disable-lzmainfo", "--disable-lzma-links"},
-			{"make"},
+			{"make", numJobs},
 			{"make", "install"},
 		})
 	case "tor":
@@ -150,23 +151,24 @@ func build(folder string) error {
 				return fmt.Errorf("Unable to make symlink: %v", err)
 			}
 		}
-		var env []string
+		var env = []string{"LDFLAGS=-s"}
 		var torConf []string
 		if runtime.GOOS == "windows" {
-			env = []string{"LIBS=-lcrypt32 -lgdi32"}
+			env = append(env, "LIBS=-lcrypt32 -lgdi32")
 		}
 		torConf = []string{"sh", "./configure", "--prefix=" + pwd + "/dist",
 			"--disable-gcc-hardening", "--disable-system-torrc", "--disable-asciidoc",
 			"--enable-static-libevent", "--with-libevent-dir=" + pwd + "/../libevent/dist",
 			"--enable-static-openssl", "--with-openssl-dir=" + pwd + "/../openssl/dist",
-			"--enable-static-zlib", "--with-zlib-dir=" + pwd + "/../openssl/dist"}
+			"--enable-static-zlib", "--with-zlib-dir=" + pwd + "/../openssl/dist",
+			"--disable-systemd", "--disable-lzma", "--disable-seccomp"}
 		if runtime.GOOS != "darwin" {
 			torConf = append(torConf, "--enable-static-tor")
 		}
 		return runCmds(folder, env, [][]string{
 			{"sh", "-l", "./autogen.sh"},
 			torConf,
-			{"make"},
+			{"make", numJobs},
 			{"make", "install"},
 		})
 	default:
