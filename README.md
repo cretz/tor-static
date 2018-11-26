@@ -93,3 +93,7 @@ The OS-specific system libs that have to be referenced (i.e. `-l<libname>`) are:
 
 * Linux/macOS - `m`
 * Windows (MinGW) - `ws2_32`, `crypt32`, and `gdi32`
+
+The OS-specific system libs that have to be explicitly statically linked (i.e. `-Wl,-Bstatic -l<libname>`) are:
+
+* Windows (MinGW) - `pthread`
