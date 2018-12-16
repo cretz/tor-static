@@ -142,13 +142,6 @@ func build(folder string) error {
 			{"make", "install"},
 		})
 	case "tor":
-		// We have to make a symlink from zlib to openssl
-		if _, err := os.Stat("openssl/dist/lib/libz.a"); os.IsNotExist(err) {
-			err = runCmd("", nil, "ln", "-s", pwd+"/../zlib/dist/lib/libz.a", pwd+"/../openssl/dist/lib/libz.a")
-			if err != nil {
-				return fmt.Errorf("Unable to make symlink: %v", err)
-			}
-		}
 		var env = []string{"LDFLAGS=-s"}
 		var torConf []string
 		if runtime.GOOS == "windows" {
@@ -158,7 +151,7 @@ func build(folder string) error {
 			"--disable-gcc-hardening", "--disable-system-torrc", "--disable-asciidoc",
 			"--enable-static-libevent", "--with-libevent-dir=" + pwd + "/../libevent/dist",
 			"--enable-static-openssl", "--with-openssl-dir=" + pwd + "/../openssl/dist",
-			"--enable-static-zlib", "--with-zlib-dir=" + pwd + "/../openssl/dist",
+			"--enable-static-zlib", "--with-zlib-dir=" + pwd + "/../zlib/dist",
 			"--disable-systemd", "--disable-lzma", "--disable-seccomp"}
 		if runtime.GOOS != "darwin" {
 			torConf = append(torConf, "--enable-static-tor")
