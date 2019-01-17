@@ -9,7 +9,7 @@ submodules are:
 * [Libevent](https://github.com/libevent/libevent) - Checked out at tag `release-2.1.8-stable`
 * [zlib](https://github.com/madler/zlib) - Checked out at tag `v1.2.11`
 * [XZ Utils](https://git.tukaani.org/?p=xz.git) - Checked out at tag `v5.2.4`
-* [Tor](https://github.com/torproject/tor) - Checked out at tag `tor-0.3.5.2-alpha`
+* [Tor](https://github.com/torproject/tor) - Checked out at tag `tor-0.3.5.7`
 
 Many many bugs and quirks were hit while deriving these steps. Also many other repos, mailing lists, etc were leveraged
 to get some of the pieces right. They are not listed here for brevity reasons.
