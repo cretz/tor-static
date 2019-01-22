@@ -5,11 +5,11 @@ This project helps compile Tor into a static lib for use in other projects.
 The dependencies are in this repository as submodules so this repository needs to be cloned with `--recursive`. The
 submodules are:
 
-* [OpenSSL](https://github.com/openssl/openssl/) - Checked out at tag `OpenSSL_1_0_2o`
+* [OpenSSL](https://github.com/openssl/openssl/) - Checked out at tag `OpenSSL_1_0_2p`
 * [Libevent](https://github.com/libevent/libevent) - Checked out at tag `release-2.1.8-stable`
 * [zlib](https://github.com/madler/zlib) - Checked out at tag `v1.2.11`
 * [XZ Utils](https://git.tukaani.org/?p=xz.git) - Checked out at tag `v5.2.4`
-* [Tor](https://github.com/torproject/tor) - Checked out at tag `tor-0.3.3.7`
+* [Tor](https://github.com/torproject/tor) - Checked out at tag `tor-0.3.5.7`
 
 Many many bugs and quirks were hit while deriving these steps. Also many other repos, mailing lists, etc were leveraged
 to get some of the pieces right. They are not listed here for brevity reasons.
@@ -73,21 +73,13 @@ are being run, add `-verbose` before the command.
 
 ## Using
 
-Once the libs have been compiled, they can be used to link with your program. Below is the list of each dir (relative to
-this repository root) and the library names inside the dirs. Library names are just the filenames without the "lib"
-prefix of ".a" extension. When using something like `ld` or `LDFLAGS`, the directories (i.e. `-L<dir>`) and the libs
-(i.e. `-l<libname>`) must be given in the order below:
+Once the libs have been compiled, they can be used to link with your program. Due to recent refactorings within the Tor
+source, the libraries are not listed here but instead listed when executing:
 
-* `tor/src/or` - `tor`
-* `tor/src/common` - `or`, `or-crypto`, `curve25519_donna`, `or-ctime`, and `or-event`
-* `tor/src/trunnel` - `or-trunnel`
-* `tor/src/ext/keccak-tiny` - `keccak-tiny`
-* `tor/src/ext/ed25519/ref10` - `ed25519_ref10`
-* `tor/src/ext/ed25519/donna` - `ed25519_donna`
-* `libevent/dist/lib` - `event`
-* `xz/dist/lib` - `lzma`
-* `zlib/dist/lib` - `z`
-* `openssl/dist/lib` - `ssl`, and `crypto`
+    go run build.go show-libs
+
+This lists directories (relative, prefixed with `-L`) followed by lib names (file sans `lib` prefix and sans `.a`
+extension, prefixed with `-l`) as might be used in `ld`.
 
 The OS-specific system libs that have to be referenced (i.e. `-l<libname>`) are:
 
