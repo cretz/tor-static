@@ -23,11 +23,11 @@ matrix:
       env: CGO_ENABLED=1 GOOS=windows GOARCH=amd64 BINARY=windows-amd64.exe
       install:
         - choco install msys2
-        - c:\tools\msys64\msys2_shell.bat \
-          pacman -Syuu \
-          exit
-        - c:\tools\msys64\msys2_shell.bat \
-          pacman -Sy --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
+        - c:\tools\msys64\msys2_shell.bat
+        - pacman -Syuu
+        - exit
+        - c:\tools\msys64\msys2_shell.bat
+        - pacman -Sy --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
           git subversion mercurial \
           mingw-w64-i686-cmake mingw-w64-x86_64-cmake
       after_script:
