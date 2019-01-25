@@ -81,7 +81,7 @@ after_success:
   - zip -r tor-static-${BINARY}.zip deploy
 
 deploy:
-  if: branch = integrate-ci
+  if: branch = master
   provider: releases
   api_key: "${GITHUB_PAT}"
   file: "tor-static-${BINARY}.zip"
