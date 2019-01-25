@@ -33,7 +33,6 @@ matrix:
           pacman -Sy --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
           git subversion mercurial \
           mingw-w64-i686-cmake mingw-w64-x86_64-cmake
-      #after_success: # do something
 
 script:
   - go run build.go build-all
@@ -84,7 +83,6 @@ after_success:
   - zip -r tor-static-${BINARY}.zip deploy
 
 deploy:
-  # branch will be master in prod
   if: branch = integrate-ci
   provider: releases
   api_key: "${GITHUB_PAT}"
