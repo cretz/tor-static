@@ -39,7 +39,7 @@ script:
   - go run build.go show-libs
 
 deploy:
-  if: branch = master
+  if: (branch = master)
   provider: releases
   api_key: "${GITHUB_PAT}"
   file: "tor-static-${BINARY}"
