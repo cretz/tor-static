@@ -16,7 +16,6 @@ matrix:
       os: osx
       env: CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 BINARY=darwin-amd64
       install:
-        - xcode-select --install
         - brew install libtool
         - brew install automake
         - brew install gettext
