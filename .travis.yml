@@ -54,7 +54,7 @@ matrix:
         - mv Lzlib/dist/lib/lz ./deploy/Lzlib/dist/lib/lz
         - mv Lopenssl/dist/lib/lssl ./deploy/Lopenssl/dist/lib/lssl
         - mv Lopenssl/dist/lib/lcrypto ./deploy/Lopenssl/dist/lib/lcrypto
-        - zip deploy
+        - zip -r tor-static-${BINARY}.zip deploy
     - name: darwin-amd64
       os: osx
       env: CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 BINARY=darwin-amd64
@@ -85,7 +85,7 @@ deploy:
   if: branch = master
   provider: releases
   api_key: "${GITHUB_PAT}"
-  file: "tor-static-${BINARY}"
+  file: "tor-static-${BINARY}.zip"
   skip_cleanup: true
   draft: true
   on:
