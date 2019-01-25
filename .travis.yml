@@ -23,16 +23,16 @@ matrix:
       env: CGO_ENABLED=1 GOOS=windows GOARCH=amd64 BINARY=windows-amd64.exe
       install:
         - choco install msys2
-        - choco install mingw
+        - refreshenv
         - msys2
         - pacman -Syuu
         - pacman -Sy --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
           git subversion mercurial \
           mingw-w64-i686-cmake mingw-w64-x86_64-cmake
 
-script: go run build.go build-all
-
-after_script: go run build.go show-libs
+script:
+  - go run build.go build-all
+  - go run build.go show-libs
 
 deploy:
   if: branch = master
