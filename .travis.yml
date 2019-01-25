@@ -24,6 +24,7 @@ matrix:
       install:
         - choco install msys2
         - choco install mingw
+        - msys2
         - pacman -Syuu
         - pacman -Sy --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
           git subversion mercurial \
