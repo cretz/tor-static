@@ -82,7 +82,8 @@ script:
   - go run build.go show-libs
 
 deploy:
-  if: branch = master
+  # branch will be master in prod
+  if: branch = integrate-ci
   provider: releases
   api_key: "${GITHUB_PAT}"
   file: "tor-static-${BINARY}.zip"
