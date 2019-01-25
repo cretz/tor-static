@@ -22,14 +22,11 @@ matrix:
       os: windows
       env: CGO_ENABLED=1 GOOS=windows GOARCH=amd64 BINARY=windows-amd64.exe
       install:
-        - choco install msys2
-        - $env:ChocolateyInstall = Convert-Path "$((Get-Command choco).path)\..\.." \
-          Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1" \
-          refreshenv
-        - msys2 \
+        - choco install -y msys2
+        - c:\tools\msys64\msys2_shell.bat \
           pacman -Syuu \
           exit
-        - msys2 \
+        - c:\tools\msys64\msys2_shell.bat \
           pacman -Sy --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
           git subversion mercurial \
           mingw-w64-i686-cmake mingw-w64-x86_64-cmake
@@ -39,7 +36,7 @@ script:
   - go run build.go show-libs
 
 deploy:
-  if: (branch = master)
+  if: branch = master
   provider: releases
   api_key: "${GITHUB_PAT}"
   file: "tor-static-${BINARY}"
