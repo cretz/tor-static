@@ -38,8 +38,7 @@ matrix:
 script:
   - go run build.go build-all
   - go run build.go show-libs
-
-after_script: go test -v build_test.go -tor.verbose
+  - go test -v build_test.go -tor.verbose
 
 after_success:
   - mkdir deploy
