@@ -38,7 +38,7 @@ matrix:
 script:
   - go run build.go build-all
   - go run build.go show-libs
-  - go get github.com/cretz/bine
+  - go get -u github.com/cretz/bine
   - go test -v build_test.go -tor.verbose
 
 after_success:
