@@ -23,14 +23,14 @@ matrix:
       env: CGO_ENABLED=1 GOOS=windows GOARCH=amd64 BINARY=windows-amd64.exe
       install:
         - choco install msys2
-        - c:\tools\msys64\msys2_shell.bat
+        - c:\tools\msys64\msys2_shell.cmd
         - pacman -Syuu
         - exit
-        - c:\tools\msys64\msys2_shell.bat
+        - c:\tools\msys64\msys2_shell.cmd
         - pacman -Sy --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
           git subversion mercurial \
           mingw-w64-i686-cmake mingw-w64-x86_64-cmake
-      after_script:
+      after_success:
         - setx BINARY "windows-amd64.exe"
         - mkdir deploy
         - 7z a tor-static-${BINARY}.zip deploy
@@ -39,7 +39,7 @@ script:
   - go run build.go build-all
   - go run build.go show-libs
 
-after_script:
+after_success:
   - mkdir deploy
   - mv Ltor/src/core/ltor-app ./deploy/Ltor/src/core/ltor-app
   - mv Ltor/src/lib/ltor-compress ./deploy/Ltor/src/lib/ltor-compress
