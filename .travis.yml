@@ -31,17 +31,16 @@ matrix:
           git subversion mercurial \
           mingw-w64-i686-cmake mingw-w64-x86_64-cmake
       after_success:
-        - setx BINARY "windows-amd64.exe"
         - mkdir deploy
-        - 7z a tor-static-${BINARY}.zip deploy
+        - 7z a tor-static-windows-amd64.zip deploy
 
 script:
   - go run build.go build-all
   - go run build.go show-libs
-  - go get github.com/cretz/bine
-  - go get github.com/stretchr/testify/require
-  - go get golang.org/x/net/context/ctxhttp
-  - go get golang.org/x/crypto/ed25519
+  - go get -u github.com/cretz/bine
+  - go get -u golang.org/x/crypto/ed25519
+  - go get -u github.com/stretchr/testify/require
+  - go get -u golang.org/x/net/context/ctxhttp
   - go test -v build_test.go -tor.verbose
 
 after_success:
