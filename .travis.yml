@@ -38,7 +38,10 @@ matrix:
 script:
   - go run build.go build-all
   - go run build.go show-libs
-  - go get -u github.com/cretz/bine
+  - go get github.com/cretz/bine
+  - go get github.com/stretchr/testify/require
+  - go get golang.org/x/net/context/ctxhttp
+  - go get golang.org/x/crypto/ed25519
   - go test -v build_test.go -tor.verbose
 
 after_success:
