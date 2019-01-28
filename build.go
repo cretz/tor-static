@@ -1,9 +1,14 @@
 package main
 
 import (
+	"archive/tar"
+	"archive/zip"
 	"bytes"
+	"compress/gzip"
 	"flag"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -24,7 +29,7 @@ func main() {
 	flag.StringVar(&autopointPath, "autopoint-path", "/usr/local/opt/gettext/bin", "OSX: Directory that contains autopoint binary")
 	flag.Parse()
 	if len(flag.Args()) != 1 {
-		log.Fatal("Missing command. Can be build-all, build-<folder>, clean-all, clean-<folder>, or show-libs")
+		log.Fatal("Missing command. Can be build-all, build-<folder>, clean-all, clean-<folder>, show-libs, or package-libs")
 	}
 	if err := run(flag.Args()[0]); err != nil {
 		log.Fatal(err)
@@ -35,14 +40,18 @@ func run(cmd string) error {
 	if err := validateEnvironment(); err != nil {
 		return err
 	}
-	if strings.HasPrefix(cmd, "build-") {
+	switch {
+	case strings.HasPrefix(cmd, "build-"):
 		return build(cmd[6:])
-	} else if strings.HasPrefix(cmd, "clean-") {
+	case strings.HasPrefix(cmd, "clean-"):
 		return clean(cmd[6:])
-	} else if cmd == "show-libs" {
+	case cmd == "show-libs":
 		return showLibs()
+	case cmd == "package-libs":
+		return packageLibs()
+	default:
+		return fmt.Errorf("Invalid command: %v. Should be build-all, build-<folder>, clean-all, clean-<folder>, show-libs, or package-libs", cmd)
 	}
-	return fmt.Errorf("Invalid command: %v. Should be build-all, build-<folder>, clean-all, clean-<folder>, or show-libs", cmd)
 }
 
 func getAbsCurrDir() string {
@@ -231,46 +240,131 @@ func runCmd(folder string, env []string, cmd string, args ...string) error {
 	return c.Run()
 }
 
-func showLibs() error {
+type libSet struct {
+	dir  string
+	libs []string
+}
+
+// Results in recommended linker order
+func getLibSets() ([]*libSet, error) {
 	// Ask Tor for their libs
 	cmd := exec.Command("make", "show-libs")
 	cmd.Dir = "tor"
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("Failed 'make show-libs' in tor: %v", err)
+		return nil, fmt.Errorf("Failed 'make show-libs' in tor: %v", err)
 	}
-	// Key is dir
-	libSets := [][]string{}
+	// Load them all
+	libSets := []*libSet{}
+	libSetsByDir := map[string]*libSet{}
 	for _, lib := range strings.Split(strings.TrimSpace(string(out)), " ") {
 		dir, file := path.Split(lib)
 		dir = path.Join("tor", dir)
-		file = strings.TrimPrefix(strings.TrimSuffix(file, ".a"), "lib")
-		found := false
-		for i, libSet := range libSets {
-			if libSet[0] == dir {
-				libSets[i] = append(libSets[i], file)
-				found = true
-				break
-			}
+		set := libSetsByDir[dir]
+		if set == nil {
+			set = &libSet{dir: dir}
+			libSets = append(libSets, set)
+			libSetsByDir[dir] = set
 		}
-		if !found {
-			libSets = append(libSets, []string{dir, file})
-		}
+		set.libs = append(set.libs, strings.TrimPrefix(strings.TrimSuffix(file, ".a"), "lib"))
 	}
 	// Add the rest of the known libs
 	libSets = append(libSets,
-		[]string{"libevent/dist/lib", "event"},
-		[]string{"xz/dist/lib", "lzma"},
-		[]string{"zlib/dist/lib", "z"},
-		[]string{"openssl/dist/lib", "ssl", "crypto"},
+		&libSet{"libevent/dist/lib", []string{"event"}},
+		&libSet{"xz/dist/lib", []string{"lzma"}},
+		&libSet{"zlib/dist/lib", []string{"z"}},
+		&libSet{"openssl/dist/lib", []string{"ssl", "crypto"}},
 	)
-	// Dump em
+	return libSets, nil
+}
+
+func showLibs() error {
+	libSets, err := getLibSets()
+	if err != nil {
+		return err
+	}
 	for _, libSet := range libSets {
-		fmt.Print("-L" + libSet[0])
-		for _, lib := range libSet[1:] {
+		fmt.Print("-L" + libSet.dir)
+		for _, lib := range libSet.libs {
 			fmt.Print(" -l" + lib)
 		}
 		fmt.Println()
+	}
+	return nil
+}
+
+func packageLibs() error {
+	// Make both a libs.tar.gz and a libs.zip...
+	// Get lib sets
+	libSets, err := getLibSets()
+	if err != nil {
+		return err
+	}
+	// Create tar writer
+	var tw *tar.Writer
+	if tf, err := os.Create("libs.tar.gz"); err != nil {
+		return err
+	} else {
+		defer tf.Close()
+		gw := gzip.NewWriter(tf)
+		defer gw.Close()
+		tw = tar.NewWriter(gw)
+		defer tw.Close()
+	}
+	tarWrite := func(path string, b []byte, i os.FileInfo) error {
+		th, err := tar.FileInfoHeader(i, "")
+		if err == nil {
+			th.Name = path
+			if err = tw.WriteHeader(th); err == nil {
+				_, err = tw.Write(b)
+			}
+		}
+		return err
+	}
+	// Create zip writer
+	var zw *zip.Writer
+	if zf, err := os.Create("libs.zip"); err != nil {
+		return err
+	} else {
+		defer zf.Close()
+		zw = zip.NewWriter(zf)
+		defer zw.Close()
+	}
+	zipWrite := func(path string, b []byte, i os.FileInfo) error {
+		zh, err := zip.FileInfoHeader(i)
+		if err == nil {
+			zh.Name = path
+			zh.Method = zip.Deflate
+			var w io.Writer
+			if w, err = zw.CreateHeader(zh); err == nil {
+				_, err = w.Write(b)
+			}
+		}
+		return err
+	}
+	// Copy over each lib
+	fileBytesAndInfo := func(name string) (b []byte, i os.FileInfo, err error) {
+		f, err := os.Open(name)
+		if err != nil {
+			return nil, nil, err
+		}
+		defer f.Close()
+		if i, err = f.Stat(); err == nil {
+			b, err = ioutil.ReadAll(f)
+		}
+		return
+	}
+	for _, libSet := range libSets {
+		for _, lib := range libSet.libs {
+			libPath := path.Join(libSet.dir, "lib"+lib+".a")
+			if b, i, err := fileBytesAndInfo(libPath); err != nil {
+				return err
+			} else if err := tarWrite(libPath, b, i); err != nil {
+				return err
+			} else if err := zipWrite(libPath, b, i); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
