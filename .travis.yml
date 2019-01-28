@@ -32,7 +32,10 @@ matrix:
           mingw-w64-i686-cmake mingw-w64-x86_64-cmake
 
 before_script:
-  - go mod download
+  - go get -u golang.org/x/crypto
+  - go get -u golang.org/x/net
+  - go get -u github.com/stretchr/testify
+  - go get -u -t github.com/cretz/bine
 
 script:
   - go test -v build_test.go -tor.verbose
