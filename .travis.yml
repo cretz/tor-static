@@ -31,6 +31,9 @@ matrix:
           git subversion mercurial \
           mingw-w64-i686-cmake mingw-w64-x86_64-cmake
 
+before_script:
+  - go mod download
+
 script:
   - go test -v build_test.go -tor.verbose
 
