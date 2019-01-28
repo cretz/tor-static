@@ -50,7 +50,7 @@ after_success:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mv libz.tar.gz tor-static-darwin-amd64.tar.gz; fi
 
 deploy:
-  if: [[ "$TRAVIS_BRANCH" == "master" ]]
+  if: branch = integrate-ci
   provider: releases
   api_key: "${GITHUB_PAT}"
   file:
