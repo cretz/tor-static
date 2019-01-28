@@ -354,17 +354,22 @@ func packageLibs() error {
 		}
 		return
 	}
+	copyFile := func(filePath string) error {
+		if b, i, err := fileBytesAndInfo(filePath); err != nil {
+			return err
+		} else if err := tarWrite(filePath, b, i); err != nil {
+			return err
+		} else {
+			return zipWrite(filePath, b, i)
+		}
+	}
 	for _, libSet := range libSets {
 		for _, lib := range libSet.libs {
-			libPath := path.Join(libSet.dir, "lib"+lib+".a")
-			if b, i, err := fileBytesAndInfo(libPath); err != nil {
-				return err
-			} else if err := tarWrite(libPath, b, i); err != nil {
-				return err
-			} else if err := zipWrite(libPath, b, i); err != nil {
+			if err := copyFile(path.Join(libSet.dir, "lib"+lib+".a")); err != nil {
 				return err
 			}
 		}
 	}
-	return nil
+	// Also copy over tor_api.h
+	return copyFile("tor/src/feature/api/tor_api.h")
 }
