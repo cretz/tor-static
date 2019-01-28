@@ -31,15 +31,10 @@ matrix:
           git subversion mercurial \
           mingw-w64-i686-cmake mingw-w64-x86_64-cmake
 
-before_script:
-  - go get -u github.com/cretz/bine
-  - go get -u github.com/cretz/bine/process/embedded
-  - go get -u golang.org/x/crypto/ed25519
-  - go get -u github.com/stretchr/testify/require
-  - go get -u golang.org/x/net/context/ctxhttp
-
 script:
   - go test -v build_test.go -tor.verbose
+
+after_script:
   - go run build.go build-all
   - go run build.go show-libs
   - go run build.go package-libs
