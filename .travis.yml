@@ -33,18 +33,17 @@ matrix:
 
 before_script:
   - go get -u github.com/cretz/bine
-  - go get -u github.com/cretz/bine/process/embedded
   - go get -u golang.org/x/crypto/ed25519
   - go get -u github.com/stretchr/testify/require
   - go get -u golang.org/x/net/context/ctxhttp
 
 script:
-  #- go test -v build_test.go -tor.verbose
+  - go test -v build_test.go -tor.verbose
   - go run build.go build-all
   - go run build.go show-libs
+  - go run build.go package-libs
 
 after_success:
-  - go run build.go package-libs
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then mv libs.zip tor-static-windows-amd64.zip; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then mv libz.tar.gz tor-static-linux-amd64.tar.gz; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mv libz.tar.gz tor-static-darwin-amd64.tar.gz; fi
