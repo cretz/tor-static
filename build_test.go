@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cretz/bine/process/embedded"
 	"github.com/cretz/bine/tor"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context/ctxhttp"
@@ -91,7 +90,7 @@ func GlobalEnabledNetworkContext(t *testing.T) *TestContext {
 func NewTestContext(t *testing.T, conf *tor.StartConf) *TestContext {
 	// Build start conf
 	if conf == nil {
-		conf = &tor.StartConf{ProcessCreator: embedded.NewCreator()}
+		conf = &tor.StartConf{}
 	}
 	conf.ExePath = torExePath
 	if torVerbose {
