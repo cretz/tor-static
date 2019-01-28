@@ -2,6 +2,10 @@ language: go
 go: 1.11.x
 sudo: false
 
+stages:
+  - name: deploy
+    if: branch = integrate-ci
+
 matrix:
   include:
     - name: linux-amd64
@@ -35,8 +39,8 @@ before_script:
   - go run build.go build-all
 
 script:
-  - go get -u golang.org/x/crypto
-  - go get -u golang.org/x/net
+  - go get -u github.com/golang/crypto
+  - go get -u github.com/golang/net
   - go get -u github.com/stretchr/testify
   - go get -u -t github.com/cretz/bine
   - go test -v build_test.go -tor.verbose
@@ -47,11 +51,10 @@ after_script:
 
 after_success:
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then mv libs.zip tor-static-windows-amd64.zip; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then mv libz.tar.gz tor-static-linux-amd64.tar.gz; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mv libz.tar.gz tor-static-darwin-amd64.tar.gz; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then mv libs.tar.gz tor-static-linux-amd64.tar.gz; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mv libs.tar.gz tor-static-darwin-amd64.tar.gz; fi
 
 deploy:
-  if: branch = integrate-ci
   provider: releases
   api_key: "${GITHUB_PAT}"
   file:
