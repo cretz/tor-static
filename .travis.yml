@@ -4,6 +4,7 @@ sudo: false
 
 stages:
   - name: deploy
+    # change to master
     if: branch = integrate-ci
 
 matrix:
@@ -42,6 +43,8 @@ script:
   - go get -u golang.org/x/crypto/ed25519
   - go get -u golang.org/x/net/context/ctxhttp
   - go get -u github.com/stretchr/testify
+  - go get -u github.com/cretz/bine/tor
+  - go get -u github.com/cretz/bine/process/embedded
   - go get -u -t github.com/cretz/bine
   - go test -v build_test.go -tor.verbose
 
@@ -50,7 +53,7 @@ after_script:
   - go run build.go package-libs
 
 after_success:
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then mv libs.zip tor-static-windows-amd64.zip; fi
+#  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then mv libs.zip tor-static-windows-amd64.zip; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then mv libs.tar.gz tor-static-linux-amd64.tar.gz; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mv libs.tar.gz tor-static-darwin-amd64.tar.gz; fi
 
@@ -58,7 +61,7 @@ deploy:
   provider: releases
   api_key: "${GITHUB_PAT}"
   file:
-    - tor-static-windows-amd64.zip
+#    - tor-static-windows-amd64.zip
     - tor-static-linux-amd64.tar.gz
     - tor-static-darwin-amd64.tar.gz
   skip_cleanup: true
