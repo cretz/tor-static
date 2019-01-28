@@ -33,6 +33,7 @@ matrix:
 
 before_script:
   - go get -u github.com/cretz/bine
+  - go get -u github.com/cretz/bine/process/embedded
   - go get -u golang.org/x/crypto/ed25519
   - go get -u github.com/stretchr/testify/require
   - go get -u golang.org/x/net/context/ctxhttp
