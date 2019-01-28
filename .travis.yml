@@ -23,18 +23,21 @@ matrix:
       install:
         - brew install libtool
         - brew install gettext
-#    - name: windows-amd64
-#      os: windows
-#      env: CGO_ENABLED=1 GOOS=windows GOARCH=amd64
-#      install:
-#        - choco install msys2
-#        - c:\tools\msys64\msys2_shell.cmd
-#        - pacman -Syuu
-#        - exit
-#        - c:\tools\msys64\msys2_shell.cmd
-#        - pacman -Sy --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
-#          git subversion mercurial \
-#          mingw-w64-i686-cmake mingw-w64-x86_64-cmake
+    - name: windows-amd64
+      os: windows
+      env: CGO_ENABLED=1 GOOS=windows GOARCH=amd64
+      install:
+        - choco install msys2
+        - c:\tools\msys64\msys2_shell.cmd
+        - pacman -Syuu
+        - exit
+        - c:\tools\msys64\msys2_shell.cmd
+        - pacman -Sy --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
+          git subversion mercurial \
+          mingw-w64-i686-cmake mingw-w64-x86_64-cmake
+  fast_finish: true
+  allow_failures:
+    - env: GOOS=windows
 
 before_script:
   - go run build.go build-all
