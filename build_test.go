@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cretz/bine/process/embedded"
-	"github.com/cretz/bine/tor"
+	"github.com/ciehanski/bine/process/embedded"
+	"github.com/ciehanski/bine/tor"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context/ctxhttp"
 )
