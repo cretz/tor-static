@@ -23,32 +23,34 @@ matrix:
       install:
         - brew install libtool
         - brew install gettext
-    - name: windows-amd64
-      os: windows
-      env: CGO_ENABLED=1 GOOS=windows GOARCH=amd64
-      install:
-        - choco install msys2
-        - c:\tools\msys64\msys2_shell.cmd
-        - pacman -Syuu
-        - exit
-        - c:\tools\msys64\msys2_shell.cmd
-        - pacman -Sy --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
-          git subversion mercurial \
-          mingw-w64-i686-cmake mingw-w64-x86_64-cmake
-  fast_finish: true
-  allow_failures:
-    - env: GOOS=windows
+#    - name: windows-amd64
+#      os: windows
+#      env: CGO_ENABLED=1 GOOS=windows GOARCH=amd64
+#      install:
+#        - choco install msys2
+#        - c:\tools\msys64\msys2_shell.cmd
+#        - pacman -Syuu
+#        - exit
+#        - c:\tools\msys64\msys2_shell.cmd
+#        - pacman -Sy --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
+#          git subversion mercurial \
+#          mingw-w64-i686-cmake mingw-w64-x86_64-cmake
+#  fast_finish: true
+#  allow_failures:
+#    - env: GOOS=windows
 
 before_script:
   - go run build.go build-all
+  - go run build.go show-libs
 
 script:
-#  - go get -u golang.org/x/crypto/ed25519
-#  - go get -u golang.org/x/net/context/ctxhttp
-#  - go get -u github.com/stretchr/testify
-#  - go get -u github.com/cretz/bine
-#  - go test -v build_test.go -tor.verbose
-  - go run build.go show-libs
+  - cd ${TRAVIS_HOME} && \
+    go get -u github.com/cretz/bine && \
+    go get -u golang.org/x/crypto/ed25519 && \
+    go get -u golang.org/x/net/context/ctxhttp && \
+    go get -u github.com/stretchr/testify
+  - cd ${TRAVIS_BUILD_DIR} && \
+    go test -v build_test.go -tor.verbose
 
 after_script:
   - go run build.go package-libs
