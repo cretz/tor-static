@@ -43,12 +43,10 @@ before_script:
   - go run build.go show-libs
 
 script:
-  - cd ${TRAVIS_HOME}
-  - go get -u github.com/cretz/bine
+  - go get -u github.com/ciehanski/bine
   - go get -u golang.org/x/crypto/ed25519
   - go get -u golang.org/x/net/context/ctxhttp
   - go get -u github.com/stretchr/testify
-  - cd ${TRAVIS_BUILD_DIR}
   - go test -v build_test.go -tor.verbose
 
 after_script:
