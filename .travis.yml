@@ -27,7 +27,7 @@ before_script:
   - go run build.go -verbose build-all
 
 script:
-  - go get -u github.com/cretz/bine
+  - go get -u github.com/cretz/bine golang.org/x/crypto/ed25519
   - go test -v build_test.go -tor.verbose
 
 after_script:
