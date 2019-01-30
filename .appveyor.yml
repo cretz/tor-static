@@ -12,7 +12,7 @@ environment:
 install:
   - set PATH=C:\msys64\usr\bin;%PATH%
   - set MSYSTEM=MINGW64
-  - bash -lc "pacman -Sy --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain git mingw-w64-i686-cmake mingw-w64-x86_64-cmake"
+  - bash -lc "pacman -Sy --noconfirm --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain git mingw-w64-i686-cmake mingw-w64-x86_64-cmake"
 
 before_build:
   - set MSYSTEM=MINGW64
