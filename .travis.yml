@@ -25,7 +25,8 @@ matrix:
     - name: windows-amd64
       os: windows
       env: CGO_ENABLED=1 GOOS=windows GOARCH=amd64
-      # install:
+      install:
+        - choco install make
         # - choco install msys2
         # - /c/tools/msys64/msys2_shell.cmd
         # - pacman -Syuu
