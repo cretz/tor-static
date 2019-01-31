@@ -24,10 +24,7 @@ build_script:
   - bash -lc "export PATH=/mingw64/bin:$PATH && cd /c/gopath/src/github.com/cretz/tor-static && /c/go/bin/go run build.go -verbose build-all"
 
 test_script:
-  - bash -lc "which gcc"
-  - where gcc
   - set PATH=C:\msys64\mingw64\bin;%PATH%
-  - where gcc
   - go get -u github.com/cretz/bine/tor
   - cd c:\gopath\src\github.com\cretz\tor-static
   - go test -v build_test.go -tor.verbose
