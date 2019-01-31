@@ -23,8 +23,8 @@ func TestMain(m *testing.M) {
 }
 
 func TestDialierSimpleHTTP(t *testing.T) {
-	// Give the whole thing a minute
-	ctx, cancelFn := context.WithTimeout(context.Background(), 1*time.Minute)
+	// Give the whole thing 5 minutes just in case Tor is slow at the time
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancelFn()
 	// Start embedded Tor
 	conf := &tor.StartConf{ProcessCreator: embedded.NewCreator()}
