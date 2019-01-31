@@ -1,4 +1,4 @@
-# tor-static
+# tor-static [![Build Status](https://travis-ci.org/cretz/tor-static.svg?branch=master)](https://travis-ci.org/cretz/tor-static) [![Build status](https://ci.appveyor.com/api/projects/status/su4pkdrmlki6jd7n?svg=true)](https://ci.appveyor.com/project/cretz/tor-static)
 
 This project helps compile Tor into a static lib for use in other projects.
 
