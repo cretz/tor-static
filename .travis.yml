@@ -22,34 +22,18 @@ matrix:
       install:
         - brew install libtool
         - brew install gettext
-#    - name: windows-amd64
-#      os: windows
-#      env: CGO_ENABLED=1 GOOS=windows GOARCH=amd64
-#      install:
-#        - choco install msys2
-#        - c:\tools\msys64\msys2_shell.cmd
-#        - pacman -Syuu
-#        - exit
-#        - c:\tools\msys64\msys2_shell.cmd
-#        - pacman -Sy --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
-#          git subversion mercurial \
-#          mingw-w64-i686-cmake mingw-w64-x86_64-cmake
-  fast_finish: true
-#  allow_failures:
-#    - env: GOOS=windows
 
 before_script:
   - go run build.go -verbose build-all
 
 script:
-  - go get -u github.com/cretz/bine golang.org/x/crypto/ed25519 golang.org/x/net/context/ctxhttp github.com/stretchr/testify
+  - go get -u github.com/cretz/bine/tor
   - go test -v build_test.go -tor.verbose
 
 after_script:
   - go run build.go package-libs
 
 after_success:
-#  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then mv libs.zip tor-static-windows-amd64.zip; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then mv libs.tar.gz tor-static-linux-amd64.tar.gz; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mv libs.tar.gz tor-static-darwin-amd64.tar.gz; fi
 
@@ -57,7 +41,6 @@ deploy:
   provider: releases
   api_key: "${GITHUB_PAT}"
   file:
-#    - tor-static-windows-amd64.zip
     - tor-static-linux-amd64.tar.gz
     - tor-static-darwin-amd64.tar.gz
   skip_cleanup: true

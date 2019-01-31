@@ -79,9 +79,9 @@ func validateEnvironment() error {
 	case "windows":
 		// Confirm it is MinGW 64
 		if byts, err := exec.Command("uname", "-a").CombinedOutput(); err != nil {
-			return fmt.Errorf("This has to be run in a MSYS or MinGW shell")
-		} else if !bytes.HasPrefix(byts, []byte("MINGW64")) {
-			return fmt.Errorf("This has to be run in a MSYS or MinGW64 shell")
+			return fmt.Errorf("This has to be run in a MSYS or MinGW shell, uname failed: %v", err)
+		} else if !bytes.HasPrefix(byts, []byte("MINGW64")) && !bytes.HasPrefix(byts, []byte("MSYS2")) {
+			return fmt.Errorf("This has to be run in a MSYS or MinGW64 shell, uname output: %v", string(byts))
 		}
 	case "linux":
 		// Make sure it's not MinGW
