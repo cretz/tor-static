@@ -167,6 +167,9 @@ func build(folder string) error {
 		if runtime.GOOS != "darwin" {
 			torConf = append(torConf, "--enable-static-tor")
 		}
+		if runtime.GOOS == "windows" {
+			torConf = append(torConf, "--disable-zstd")
+		}
 		return runCmds(folder, env, [][]string{
 			{"sh", "-l", "./autogen.sh"},
 			torConf,
