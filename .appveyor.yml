@@ -32,6 +32,8 @@ test_script:
 after_build:
   - go run build.go package-libs
   - cp libs.zip tor-static-windows-amd64.zip
+artifacts:
+- path: tor-static-windows-amd64.zip
 
 deploy:
   description: 'New tor-static release'
