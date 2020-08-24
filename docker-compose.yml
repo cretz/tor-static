@@ -1,0 +1,10 @@
+version: '3'
+services:
+  torstaticbuilder:
+    image: torstaticbuilder
+    build:
+      context: .
+      dockerfile: Dockerfile-ubuntu
+    volumes:
+      - "./build:/build/tor-static/tor/dist/bin/"
+
