@@ -1,3 +1,5 @@
+**Note: This branch under development**
+
 # tor-static [![Build Status](https://travis-ci.org/cretz/tor-static.svg?branch=master)](https://travis-ci.org/cretz/tor-static) [![Build status](https://ci.appveyor.com/api/projects/status/su4pkdrmlki6jd7n?svg=true)](https://ci.appveyor.com/project/cretz/tor-static)
 
 This project helps compile Tor into a static lib for use in other projects.
@@ -5,11 +7,11 @@ This project helps compile Tor into a static lib for use in other projects.
 The dependencies are in this repository as submodules so this repository needs to be cloned with `--recursive`. The
 submodules are:
 
-* [OpenSSL](https://github.com/openssl/openssl/) - Checked out at tag `OpenSSL_1_0_2p`
-* [Libevent](https://github.com/libevent/libevent) - Checked out at tag `release-2.1.8-stable`
+* [OpenSSL](https://github.com/openssl/openssl/) - Checked out at tag `OpenSSL_1_1_1k`
+* [Libevent](https://github.com/libevent/libevent) - Checked out at tag `release-2.1.12-stable`
 * [zlib](https://github.com/madler/zlib) - Checked out at tag `v1.2.11`
-* [XZ Utils](https://git.tukaani.org/?p=xz.git) - Checked out at tag `v5.2.4`
-* [Tor](https://github.com/torproject/tor) - Checked out at tag `tor-0.3.5.7`
+* [XZ Utils](https://git.tukaani.org/?p=xz.git) - Checked out at tag `v5.2.5`
+* [Tor](https://github.com/torproject/tor) - Checked out at tag `tor-0.4.6.5`
 
 Many many bugs and quirks were hit while deriving these steps. Also many other repos, mailing lists, etc were leveraged
 to get some of the pieces right. They are not listed here for brevity reasons.
