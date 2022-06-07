@@ -1,0 +1,44 @@
+name: Build static binaries
+
+on: push
+# on:
+#   release:
+#     types: [created]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    steps:
+      - name: Download build tools
+        run: sudo apt-get install build-essential libtool autopoint
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Download dependencies
+        run: git submodule update --init --recursive
+      - name: Setup go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '^1.18.2'
+      - name: Info
+        run: tree
+      - name: Build dependencies
+        run: go run build.go -verbose build-all
+      - name: Show libs
+        run: go run build.go show-libs
+      - name: Info
+        run: tree tor
+      - name: Upload tor binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: tor-${{ matrix.os }}
+          path:
+            tor/src/app/tor
