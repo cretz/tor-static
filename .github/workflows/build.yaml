@@ -16,10 +16,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest]
     steps:
+      # Download dependencies depending on platform
       - name: Download build tools
+        if: matrix.os == "ubuntu-latest"
         run: sudo apt-get install build-essential libtool autopoint
+      - name: Download build tools
+        if: matrix.os == "macos-latest"
+        run: sudo brew install libtool automake gettext
+
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Download dependencies
