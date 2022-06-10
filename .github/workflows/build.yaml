@@ -24,7 +24,7 @@ jobs:
         run: sudo apt-get install build-essential libtool autopoint
       - name: Download build tools
         if: matrix.os == 'macos-latest'
-        run: sudo brew install libtool automake gettext
+        run: brew install libtool automake gettext
 
       - name: Checkout repository
         uses: actions/checkout@v3
