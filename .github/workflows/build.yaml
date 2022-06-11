@@ -20,13 +20,13 @@ jobs:
     steps:
       # Download dependencies depending on platform
       - name: Download build tools [linux]
-        if: matrix.os == 'ubuntu-latest'
+        if: runner.os == 'Linux'
         run: sudo apt-get install build-essential libtool autopoint
       - name: Download build tools [mac]
-        if: matrix.os == 'macos-latest'
+        if: runner.os == 'macOS'
         run: brew install libtool automake gettext
       - name: Setup MinGW [windows]
-        if: matrix.os == 'windows-latest'
+        if: runner.os == 'Windows'
         uses: egor-tensin/setup-mingw@v2
 
       - name: Checkout repository
