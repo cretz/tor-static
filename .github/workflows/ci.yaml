@@ -41,7 +41,7 @@ jobs:
       - name: Upload tor binary
         uses: actions/upload-artifact@v3
         with:
-          name: tor-${{ matrix.os }}
+          name: tor-${{ runner.os }}
           path:
             tor/src/app/tor
 
