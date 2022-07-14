@@ -1,9 +1,10 @@
 name: Build static binaries
 
-on: push
-# on:
-#   release:
-#     types: [created]
+on:
+  push:
+  pull_request:
+  release:
+    types: [created]
 
 env:
   GO_VERSION_SPECIFIER: '^1.17.0'
