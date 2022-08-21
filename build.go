@@ -107,17 +107,20 @@ func build(folder string) error {
 		}
 		return nil
 	case "openssl":
+		prefix := pwd + "/dist"
 		cmds := [][]string{
-			{"sh", "./config", "--prefix=" + pwd + "/dist", "no-shared", "no-dso", "no-zlib"},
+			{"sh", "./config", "--prefix=" + prefix, "--openssldir=" + prefix, "no-shared", "no-dso", "no-zlib"},
 			{"make", "depend"},
 			{"make", numJobs},
 			{"make", "install"},
 		}
 		if runtime.GOOS == "windows" {
 			cmds[0] = append(cmds[0], "mingw64")
+			cmds[0][0] = "perl"
 			cmds[0][1] = "./Configure"
 		} else if runtime.GOOS == "darwin" {
 			cmds[0] = append(cmds[0], "darwin64-x86_64-cc")
+			cmds[0][0] = "perl"
 			cmds[0][1] = "./Configure"
 		}
 		return runCmds(folder, nil, cmds)
@@ -253,7 +256,7 @@ func getLibSets() ([]*libSet, error) {
 	// Ask Tor for their libs
 	cmd := exec.Command("make", "show-libs")
 	cmd.Dir = "tor"
-	out, err := cmd.CombinedOutput()
+	out, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("Failed 'make show-libs' in tor: %v", err)
 	}
