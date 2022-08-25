@@ -55,7 +55,7 @@ Terminate and restart the shell if asked. Rerun this command as many times as ne
 up to date. Then in the same mingw-64 shell, run:
 
     pacman -Sy --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
-                        git subversion mercurial \
+                        git subversion mercurial libtool automake autoconf automake-wrapper \
                         mingw-w64-i686-cmake mingw-w64-x86_64-cmake
 
 This will install all the tools needed for building and will take a while. Once complete, MinGW is now setup to build 
@@ -84,7 +84,7 @@ extension, prefixed with `-l`) as might be used in `ld`.
 The OS-specific system libs that have to be referenced (i.e. `-l<libname>`) are:
 
 * Linux/macOS - `m`
-* Windows (MinGW) - `ws2_32`, `crypt32`, and `gdi32`
+* Windows (MinGW) - `ws2_32`, `crypt32`, `gdi32`, `iphlpapi`, and `shlwapi`
 
 The OS-specific system libs that have to be explicitly statically linked (i.e. `-Wl,-Bstatic -l<libname>`) are:
 
