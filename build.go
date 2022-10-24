@@ -119,7 +119,11 @@ func build(folder string) error {
 			cmds[0][0] = "perl"
 			cmds[0][1] = "./Configure"
 		} else if runtime.GOOS == "darwin" {
-			cmds[0] = append(cmds[0], "darwin64-x86_64-cc")
+			if runtime.GOARCH == "arm64" {
+				cmds[0] = append(cmds[0], "darwin64-arm64-cc")
+			} else {
+				cmds[0] = append(cmds[0], "darwin64-x86_64-cc")
+			}
 			cmds[0][0] = "perl"
 			cmds[0][1] = "./Configure"
 		}
@@ -167,9 +171,15 @@ func build(folder string) error {
 			"--enable-static-openssl", "--with-openssl-dir=" + pwd + "/../openssl/dist",
 			"--enable-static-zlib", "--with-zlib-dir=" + pwd + "/../zlib/dist",
 			"--disable-systemd", "--disable-lzma", "--disable-seccomp"}
+
+		if runtime.GOOS == "darwin" {
+			torConf = append(torConf, []string{"--disable-zstd", "--disable-libscrypt"}...)
+		}
+
 		if runtime.GOOS != "darwin" {
 			torConf = append(torConf, "--enable-static-tor")
 		}
+
 		if runtime.GOOS == "windows" {
 			torConf = append(torConf, "--disable-zstd")
 		}
