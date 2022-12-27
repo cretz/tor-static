@@ -139,7 +139,7 @@ func build(folder string) error {
 		})
 	case "zlib":
 		var env []string
-		cmds := [][]string{{"sh", "./configure", "--prefix=" + pwd + "/dist"}, {"make", numJobs}, {"make", "install"}}
+		cmds := [][]string{{"sh", "./configure", "--prefix=" + pwd + "/dist", "--static"}, {"make", numJobs}, {"make", "install"}}
 		if runtime.GOOS == "windows" {
 			env = []string{"PREFIX=" + pwd + "/dist", "BINARY_PATH=" + pwd + "/dist/bin",
 				"INCLUDE_PATH=" + pwd + "/dist/include", "LIBRARY_PATH=" + pwd + "/dist/lib"}
