@@ -119,9 +119,17 @@ func build(folder string) error {
 			cmds[0][0] = "perl"
 			cmds[0][1] = "./Configure"
 		} else if runtime.GOOS == "darwin" {
-			if runtime.GOARCH == "arm64" {
+			arch := runtime.GOARCH
+
+			if os.Getenv("ARCH") != "" {
+				arch = os.Getenv("ARCH")
+			}
+
+			switch arch {
+			case "arm64":
 				cmds[0] = append(cmds[0], "darwin64-arm64-cc")
-			} else {
+			case "amd64":
+			case "x86_64":
 				cmds[0] = append(cmds[0], "darwin64-x86_64-cc")
 			}
 			cmds[0][0] = "perl"
