@@ -183,7 +183,7 @@ func build(folder string) error {
 			{"make", "install"},
 		}
 		if host != "" {
-			cmds[0] = append(cmds[1], "--host="+host)
+			cmds[1] = append(cmds[1], "--host="+host)
 		}
 		return runCmds(folder, env, cmds)
 	case "tor":
