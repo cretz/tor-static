@@ -10,6 +10,7 @@
 [submodule "xz"]
 	path = xz
 	url = https://git.tukaani.org/xz.git
+    shallow = false
 [submodule "tor"]
 	path = tor
 	url = https://github.com/torproject/tor.git
