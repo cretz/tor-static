@@ -5,6 +5,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -19,6 +20,7 @@ import (
 )
 
 var verbose bool
+var host string
 var autopointPath string
 var folders = []string{"openssl", "libevent", "zlib", "xz", "tor"}
 var absCurrDir = getAbsCurrDir()
@@ -26,6 +28,7 @@ var numJobs = fmt.Sprintf("-j%d", runtime.NumCPU())
 
 func main() {
 	flag.BoolVar(&verbose, "verbose", false, "Whether to show command output")
+	flag.StringVar(&host, "host", "", "Target host for cross compilation, if not empty is given will pass to `--host` flags")
 	flag.StringVar(&autopointPath, "autopoint-path", "/usr/local/opt/gettext/bin", "OSX: Directory that contains autopoint binary")
 	flag.Parse()
 	if len(flag.Args()) != 1 {
@@ -121,8 +124,15 @@ func build(folder string) error {
 		} else if runtime.GOOS == "darwin" {
 			arch := runtime.GOARCH
 
-			if os.Getenv("ARCH") != "" {
-				arch = os.Getenv("ARCH")
+			if host != "" {
+				switch {
+				case strings.HasPrefix(host, "arm64"):
+					arch = "arm64"
+				case strings.HasPrefix(host, "x86_64"):
+					arch = "x86_64"
+				default:
+					return errors.New("invalid host flag value")
+				}
 			}
 
 			switch arch {
@@ -137,14 +147,19 @@ func build(folder string) error {
 		}
 		return runCmds(folder, nil, cmds)
 	case "libevent":
-		return runCmds(folder, nil, [][]string{
+		cmds := [][]string{
 			{"sh", "-l", "./autogen.sh"},
 			{"sh", "./configure", "--prefix=" + pwd + "/dist",
 				"--disable-shared", "--enable-static", "--with-pic", "--disable-samples", "--disable-libevent-regress",
 				"CPPFLAGS=-I../openssl/dist/include", "LDFLAGS=-L../openssl/dist/lib"},
 			{"make", numJobs},
 			{"make", "install"},
-		})
+		}
+
+		if host != "" {
+			cmds[1] = append(cmds[1], "--host="+host)
+		}
+		return runCmds(folder, nil, cmds)
 	case "zlib":
 		var env []string
 		cmds := [][]string{{"sh", "./configure", "--prefix=" + pwd + "/dist", "--static"}, {"make", numJobs}, {"make", "install"}}
@@ -159,14 +174,18 @@ func build(folder string) error {
 		if runtime.GOOS == "darwin" {
 			env = []string{"PATH=" + autopointPath + ":" + os.Getenv("PATH")}
 		}
-		return runCmds(folder, env, [][]string{
+		cmds := [][]string{
 			{"sh", "-l", "./autogen.sh"},
 			{"sh", "./configure", "--prefix=" + pwd + "/dist", "--disable-shared", "--enable-static",
 				"--disable-doc", "--disable-scripts", "--disable-xz", "--disable-xzdec", "--disable-lzmadec",
 				"--disable-lzmainfo", "--disable-lzma-links"},
 			{"make", numJobs},
 			{"make", "install"},
-		})
+		}
+		if host != "" {
+			cmds[0] = append(cmds[1], "--host="+host)
+		}
+		return runCmds(folder, env, cmds)
 	case "tor":
 		var env = []string{"LDFLAGS=-s"}
 		var torConf []string
@@ -179,6 +198,13 @@ func build(folder string) error {
 			"--enable-static-openssl", "--with-openssl-dir=" + pwd + "/../openssl/dist",
 			"--enable-static-zlib", "--with-zlib-dir=" + pwd + "/../zlib/dist",
 			"--disable-systemd", "--disable-lzma", "--disable-seccomp"}
+
+		if host != "" {
+			torConf = append(torConf, "--host="+host)
+			if runtime.GOOS == "darwin" {
+				torConf = append(torConf, "--disable-tool-name-check")
+			}
+		}
 
 		if runtime.GOOS == "darwin" {
 			torConf = append(torConf, []string{"--disable-zstd", "--disable-libscrypt"}...)
