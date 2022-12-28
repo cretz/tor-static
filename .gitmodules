@@ -9,7 +9,7 @@
 	url = https://github.com/madler/zlib.git
 [submodule "xz"]
 	path = xz
-	url = http://git.tukaani.org/xz.git
+	url = https://git.tukaani.org/xz.git
 [submodule "tor"]
 	path = tor
 	url = https://github.com/torproject/tor.git
