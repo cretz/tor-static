@@ -5,7 +5,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -20,7 +19,7 @@ import (
 )
 
 var verbose bool
-var host string
+var configureOptions string
 var autopointPath string
 var folders = []string{"openssl", "libevent", "zlib", "xz", "tor"}
 var absCurrDir = getAbsCurrDir()
@@ -28,7 +27,7 @@ var numJobs = fmt.Sprintf("-j%d", runtime.NumCPU())
 
 func main() {
 	flag.BoolVar(&verbose, "verbose", false, "Whether to show command output")
-	flag.StringVar(&host, "host", "", "Target host for cross compilation, if not empty is given will pass to `--host` flags")
+	flag.StringVar(&configureOptions, "configure-options", "", "Configure options")
 	flag.StringVar(&autopointPath, "autopoint-path", "/usr/local/opt/gettext/bin", "OSX: Directory that contains autopoint binary")
 	flag.Parse()
 	if len(flag.Args()) != 1 {
@@ -97,10 +96,18 @@ func validateEnvironment() error {
 	return nil
 }
 
+func parseConfigureOptions() []string {
+	if configureOptions == "" {
+		return nil
+	}
+	return strings.Split(configureOptions, " ")
+}
+
 func build(folder string) error {
 	log.Printf("*** Building %v ***", folder)
 	defer log.Printf("*** Done building %v ***", folder)
 	pwd := absCurrDir + "/" + folder
+	extraConfigureOptions := parseConfigureOptions()
 	switch folder {
 	case "all":
 		for _, subFolder := range folders {
@@ -122,28 +129,11 @@ func build(folder string) error {
 			cmds[0][0] = "perl"
 			cmds[0][1] = "./Configure"
 		} else if runtime.GOOS == "darwin" {
-			arch := runtime.GOARCH
-
-			if host != "" {
-				switch {
-				case strings.HasPrefix(host, "arm64"):
-					arch = "arm64"
-				case strings.HasPrefix(host, "x86_64"):
-					arch = "x86_64"
-				default:
-					return errors.New("invalid host flag value")
-				}
-			}
-
-			switch arch {
-			case "arm64":
-				cmds[0] = append(cmds[0], "darwin64-arm64-cc")
-			case "amd64":
-			case "x86_64":
-				cmds[0] = append(cmds[0], "darwin64-x86_64-cc")
-			}
 			cmds[0][0] = "perl"
 			cmds[0][1] = "./Configure"
+		}
+		if extraConfigureOptions != nil {
+			cmds[0] = append(cmds[0], extraConfigureOptions...)
 		}
 		return runCmds(folder, nil, cmds)
 	case "libevent":
@@ -156,17 +146,24 @@ func build(folder string) error {
 			{"make", "install"},
 		}
 
-		if host != "" {
-			cmds[1] = append(cmds[1], "--host="+host)
+		if extraConfigureOptions != nil {
+			cmds[1] = append(cmds[1], extraConfigureOptions...)
 		}
 		return runCmds(folder, nil, cmds)
 	case "zlib":
 		var env []string
-		cmds := [][]string{{"sh", "./configure", "--prefix=" + pwd + "/dist", "--static"}, {"make", numJobs}, {"make", "install"}}
+		cmds := [][]string{
+			{"sh", "./configure", "--prefix=" + pwd + "/dist", "--static"},
+			{"make", numJobs},
+			{"make", "install"},
+		}
 		if runtime.GOOS == "windows" {
 			env = []string{"PREFIX=" + pwd + "/dist", "BINARY_PATH=" + pwd + "/dist/bin",
 				"INCLUDE_PATH=" + pwd + "/dist/include", "LIBRARY_PATH=" + pwd + "/dist/lib"}
 			cmds = [][]string{{"make", "-fwin32/Makefile.gcc"}, {"make", "install", "-fwin32/Makefile.gcc"}}
+		}
+		if extraConfigureOptions != nil {
+			cmds[0] = append(cmds[0], extraConfigureOptions...)
 		}
 		return runCmds(folder, env, cmds)
 	case "xz":
@@ -182,8 +179,8 @@ func build(folder string) error {
 			{"make", numJobs},
 			{"make", "install"},
 		}
-		if host != "" {
-			cmds[1] = append(cmds[1], "--host="+host)
+		if extraConfigureOptions != nil {
+			cmds[1] = append(cmds[1], extraConfigureOptions...)
 		}
 		return runCmds(folder, env, cmds)
 	case "tor":
@@ -199,11 +196,8 @@ func build(folder string) error {
 			"--enable-static-zlib", "--with-zlib-dir=" + pwd + "/../zlib/dist",
 			"--disable-systemd", "--disable-lzma", "--disable-seccomp"}
 
-		if host != "" {
-			torConf = append(torConf, "--host="+host)
-			if runtime.GOOS == "darwin" {
-				torConf = append(torConf, "--disable-tool-name-check")
-			}
+		if extraConfigureOptions != nil {
+			torConf = append(torConf, extraConfigureOptions...)
 		}
 
 		if runtime.GOOS == "darwin" {
