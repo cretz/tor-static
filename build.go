@@ -131,7 +131,35 @@ func build(folder string) error {
 		} else if runtime.GOOS == "darwin" {
 			cmds[0][0] = "perl"
 			cmds[0][1] = "./Configure"
+
+			byts, err := exec.Command("uname", "-m").CombinedOutput()
+			if err != nil {
+				return err
+			}
+
+			var defaultOSCompiler string
+			switch string(byts) {
+			case "x86_64\n":
+				defaultOSCompiler = "darwin64-x86_64-cc"
+			case "arm64\n":
+				defaultOSCompiler = "darwin64-arm64-cc"
+			}
+
+			// for cross-compilation
+			extraSpecifiedOSCompiler := false
+			if extraConfigureOptions != nil {
+				for _, v := range extraConfigureOptions {
+					if strings.Contains(v, "darwin64-arm64-cc") || strings.Contains(v, "darwin64-x86_64-cc") {
+						extraSpecifiedOSCompiler = true
+					}
+				}
+			}
+
+			if !extraSpecifiedOSCompiler {
+				cmds[0] = append(cmds[0], defaultOSCompiler)
+			}
 		}
+
 		if extraConfigureOptions != nil {
 			cmds[0] = append(cmds[0], extraConfigureOptions...)
 		}
