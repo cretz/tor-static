@@ -5,6 +5,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -19,7 +20,7 @@ import (
 )
 
 var verbose bool
-var configureOptions string
+var host string
 var autopointPath string
 var folders = []string{"openssl", "libevent", "zlib", "xz", "tor"}
 var absCurrDir = getAbsCurrDir()
@@ -27,7 +28,7 @@ var numJobs = fmt.Sprintf("-j%d", runtime.NumCPU())
 
 func main() {
 	flag.BoolVar(&verbose, "verbose", false, "Whether to show command output")
-	flag.StringVar(&configureOptions, "configure-options", "", "Configure options")
+	flag.StringVar(&host, "host", "", "Host option, useful for cross-compilation")
 	flag.StringVar(&autopointPath, "autopoint-path", "/usr/local/opt/gettext/bin", "OSX: Directory that contains autopoint binary")
 	flag.Parse()
 	if len(flag.Args()) != 1 {
@@ -96,18 +97,10 @@ func validateEnvironment() error {
 	return nil
 }
 
-func parseConfigureOptions() []string {
-	if configureOptions == "" {
-		return nil
-	}
-	return strings.Split(configureOptions, " ")
-}
-
 func build(folder string) error {
 	log.Printf("*** Building %v ***", folder)
 	defer log.Printf("*** Done building %v ***", folder)
 	pwd := absCurrDir + "/" + folder
-	extraConfigureOptions := parseConfigureOptions()
 	switch folder {
 	case "all":
 		for _, subFolder := range folders {
@@ -145,24 +138,20 @@ func build(folder string) error {
 				defaultOSCompiler = "darwin64-arm64-cc"
 			}
 
-			// for cross-compilation
-			extraSpecifiedOSCompiler := false
-			if extraConfigureOptions != nil {
-				for _, v := range extraConfigureOptions {
-					if strings.Contains(v, "darwin64-arm64-cc") || strings.Contains(v, "darwin64-x86_64-cc") {
-						extraSpecifiedOSCompiler = true
-					}
+			if host != "" {
+				switch {
+				case strings.HasPrefix(host, "x86_64"):
+					defaultOSCompiler = "darwin64-x86_64-cc"
+				case strings.HasPrefix(host, "arm64"):
+					defaultOSCompiler = "darwin64-arm64-cc"
+				default:
+					return errors.New("unsupported architecture")
 				}
 			}
 
-			if !extraSpecifiedOSCompiler {
-				cmds[0] = append(cmds[0], defaultOSCompiler)
-			}
+			cmds[0] = append(cmds[0], defaultOSCompiler)
 		}
 
-		if extraConfigureOptions != nil {
-			cmds[0] = append(cmds[0], extraConfigureOptions...)
-		}
 		return runCmds(folder, nil, cmds)
 	case "libevent":
 		cmds := [][]string{
@@ -174,8 +163,8 @@ func build(folder string) error {
 			{"make", "install"},
 		}
 
-		if extraConfigureOptions != nil {
-			cmds[1] = append(cmds[1], extraConfigureOptions...)
+		if host != "" {
+			cmds[1] = append(cmds[1], "--host="+host)
 		}
 		return runCmds(folder, nil, cmds)
 	case "zlib":
@@ -189,9 +178,6 @@ func build(folder string) error {
 			env = []string{"PREFIX=" + pwd + "/dist", "BINARY_PATH=" + pwd + "/dist/bin",
 				"INCLUDE_PATH=" + pwd + "/dist/include", "LIBRARY_PATH=" + pwd + "/dist/lib"}
 			cmds = [][]string{{"make", "-fwin32/Makefile.gcc"}, {"make", "install", "-fwin32/Makefile.gcc"}}
-		}
-		if extraConfigureOptions != nil {
-			cmds[0] = append(cmds[0], extraConfigureOptions...)
 		}
 		return runCmds(folder, env, cmds)
 	case "xz":
@@ -207,8 +193,8 @@ func build(folder string) error {
 			{"make", numJobs},
 			{"make", "install"},
 		}
-		if extraConfigureOptions != nil {
-			cmds[1] = append(cmds[1], extraConfigureOptions...)
+		if host != "" {
+			cmds[1] = append(cmds[1], "--host="+host)
 		}
 		return runCmds(folder, env, cmds)
 	case "tor":
@@ -224,12 +210,15 @@ func build(folder string) error {
 			"--enable-static-zlib", "--with-zlib-dir=" + pwd + "/../zlib/dist",
 			"--disable-systemd", "--disable-lzma", "--disable-seccomp"}
 
-		if extraConfigureOptions != nil {
-			torConf = append(torConf, extraConfigureOptions...)
+		if host != "" {
+			torConf = append(torConf, "--host="+host)
 		}
 
 		if runtime.GOOS == "darwin" {
 			torConf = append(torConf, []string{"--disable-zstd", "--disable-libscrypt"}...)
+			if host != "" {
+				torConf = append(torConf, "--disable-tool-name-check")
+			}
 		}
 
 		if runtime.GOOS != "darwin" {
