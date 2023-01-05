@@ -5,6 +5,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -19,6 +20,7 @@ import (
 )
 
 var verbose bool
+var host string
 var autopointPath string
 var folders = []string{"openssl", "libevent", "zlib", "xz", "tor"}
 var absCurrDir = getAbsCurrDir()
@@ -26,6 +28,7 @@ var numJobs = fmt.Sprintf("-j%d", runtime.NumCPU())
 
 func main() {
 	flag.BoolVar(&verbose, "verbose", false, "Whether to show command output")
+	flag.StringVar(&host, "host", "", "Host option, useful for cross-compilation")
 	flag.StringVar(&autopointPath, "autopoint-path", "/usr/local/opt/gettext/bin", "OSX: Directory that contains autopoint binary")
 	flag.Parse()
 	if len(flag.Args()) != 1 {
@@ -119,27 +122,58 @@ func build(folder string) error {
 			cmds[0][0] = "perl"
 			cmds[0][1] = "./Configure"
 		} else if runtime.GOOS == "darwin" {
-			if runtime.GOARCH == "arm64" {
-				cmds[0] = append(cmds[0], "darwin64-arm64-cc")
-			} else {
-				cmds[0] = append(cmds[0], "darwin64-x86_64-cc")
-			}
 			cmds[0][0] = "perl"
 			cmds[0][1] = "./Configure"
+
+			byts, err := exec.Command("uname", "-m").CombinedOutput()
+			if err != nil {
+				return err
+			}
+
+			var defaultOSCompiler string
+			switch string(byts) {
+			case "x86_64\n":
+				defaultOSCompiler = "darwin64-x86_64-cc"
+			case "arm64\n":
+				defaultOSCompiler = "darwin64-arm64-cc"
+			}
+
+			if host != "" {
+				switch {
+				case strings.HasPrefix(host, "x86_64"):
+					defaultOSCompiler = "darwin64-x86_64-cc"
+				case strings.HasPrefix(host, "arm64"):
+					defaultOSCompiler = "darwin64-arm64-cc"
+				default:
+					return errors.New("unsupported architecture")
+				}
+			}
+
+			cmds[0] = append(cmds[0], defaultOSCompiler)
 		}
+
 		return runCmds(folder, nil, cmds)
 	case "libevent":
-		return runCmds(folder, nil, [][]string{
+		cmds := [][]string{
 			{"sh", "-l", "./autogen.sh"},
 			{"sh", "./configure", "--prefix=" + pwd + "/dist",
 				"--disable-shared", "--enable-static", "--with-pic", "--disable-samples", "--disable-libevent-regress",
 				"CPPFLAGS=-I../openssl/dist/include", "LDFLAGS=-L../openssl/dist/lib"},
 			{"make", numJobs},
 			{"make", "install"},
-		})
+		}
+
+		if host != "" {
+			cmds[1] = append(cmds[1], "--host="+host)
+		}
+		return runCmds(folder, nil, cmds)
 	case "zlib":
 		var env []string
-		cmds := [][]string{{"sh", "./configure", "--prefix=" + pwd + "/dist", "--static"}, {"make", numJobs}, {"make", "install"}}
+		cmds := [][]string{
+			{"sh", "./configure", "--prefix=" + pwd + "/dist", "--static"},
+			{"make", numJobs},
+			{"make", "install"},
+		}
 		if runtime.GOOS == "windows" {
 			env = []string{"PREFIX=" + pwd + "/dist", "BINARY_PATH=" + pwd + "/dist/bin",
 				"INCLUDE_PATH=" + pwd + "/dist/include", "LIBRARY_PATH=" + pwd + "/dist/lib"}
@@ -151,14 +185,18 @@ func build(folder string) error {
 		if runtime.GOOS == "darwin" {
 			env = []string{"PATH=" + autopointPath + ":" + os.Getenv("PATH")}
 		}
-		return runCmds(folder, env, [][]string{
+		cmds := [][]string{
 			{"sh", "-l", "./autogen.sh"},
 			{"sh", "./configure", "--prefix=" + pwd + "/dist", "--disable-shared", "--enable-static",
 				"--disable-doc", "--disable-scripts", "--disable-xz", "--disable-xzdec", "--disable-lzmadec",
 				"--disable-lzmainfo", "--disable-lzma-links"},
 			{"make", numJobs},
 			{"make", "install"},
-		})
+		}
+		if host != "" {
+			cmds[1] = append(cmds[1], "--host="+host)
+		}
+		return runCmds(folder, env, cmds)
 	case "tor":
 		var env = []string{"LDFLAGS=-s"}
 		var torConf []string
@@ -172,8 +210,15 @@ func build(folder string) error {
 			"--enable-static-zlib", "--with-zlib-dir=" + pwd + "/../zlib/dist",
 			"--disable-systemd", "--disable-lzma", "--disable-seccomp"}
 
+		if host != "" {
+			torConf = append(torConf, "--host="+host)
+		}
+
 		if runtime.GOOS == "darwin" {
 			torConf = append(torConf, []string{"--disable-zstd", "--disable-libscrypt"}...)
+			if host != "" {
+				torConf = append(torConf, "--disable-tool-name-check")
+			}
 		}
 
 		if runtime.GOOS != "darwin" {
