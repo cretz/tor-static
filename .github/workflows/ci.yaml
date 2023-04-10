@@ -11,7 +11,7 @@ env:
 
 jobs:
   build:
-    name: Build for ${{ matrix.os }}
+    name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -62,7 +62,7 @@ jobs:
             tor/src/app/tor
 
   test:
-    name: Run tests on ${{ matrix.os }}
+    name: Tests
     needs: build
     runs-on: ${{ matrix.os }}
     strategy:
