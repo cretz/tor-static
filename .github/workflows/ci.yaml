@@ -11,12 +11,18 @@ env:
 
 jobs:
   build:
-    name: Build on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Build for ${{ matrix.triple }}
+    runs-on: ${{ matrix.runner-os}}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - runner-os: ubuntu-latest
+            triple: x86_64-unknown-linux-gnu
+          - runner-os: macos-latest
+            triple: x86_64-apple-darwin
+          - runner-os: windows-latest
+            triple: x86_64-pc-windows-gnu
     steps:
       # Download dependencies depending on platform
       - name: Download build tools [linux]
@@ -44,6 +50,7 @@ jobs:
         with:
           key: ${{ steps.cache-data.outputs.key }}
           path: |
+            PROJECT_HASH
             libevent
             openssl
             tor
@@ -52,7 +59,19 @@ jobs:
       - name: Download dependencies
         if: ${{ steps.cache-deps.outputs.cache-hit != 'true' }}
         run: git submodule update --init --recursive
+      - name: Check if rebuild needed
+        id: check-rebuild
+        run: |
+          hash="$(sha256sum test | cut -d ' ' -f1)"
+          rebuild="true"
+          if [ -e PROJECT_HASH ]; then
+            if [ "$(cat PROJECT_HASH)" == "$hash" ]; then
+              rebuild="false";
+            else echo "$hash" > PROJECT_HASH; fi
+          else echo "$hash" > PROJECT_HASH; fi
+          echo "rebuild_needed=$rebuild" >> $GITHUB_OUTPUT
       - name: Build dependencies
+        if: ${{ steps.check-rebuild.outputs.rebuild_needed != 'true' }}
         run: go run build.go -verbose build-all
       - name: Upload tor binary
         uses: actions/upload-artifact@v3
