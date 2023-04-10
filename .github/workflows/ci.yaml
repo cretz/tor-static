@@ -37,7 +37,7 @@ jobs:
           go-version: ${{ env.GO_VERSION_SPECIFIER }}
       - name: Compute cache key
         id: cache-data
-        run: echo "::set-output name=key::${{ runner.os }}-deps-$(git submodule status | sha256sum | cut -d ' ' -f1)"
+        run: echo "key=${{ runner.os }}-deps-$(git submodule status | sha256sum | cut -d ' ' -f1)" >> $GITHUB_OUTPUT
       - name: Cache dependencies
         id: cache-deps
         uses: actions/cache@v3
@@ -78,7 +78,7 @@ jobs:
           go-version: ${{ env.GO_VERSION_SPECIFIER }}
       - name: Compute cache key
         id: cache-data
-        run: echo "::set-output name=key::${{ runner.os }}-deps-$(git submodule status | sha256sum | cut -d ' ' -f1)"
+        run: echo "key=${{ runner.os }}-deps-$(git submodule status | sha256sum | cut -d ' ' -f1)" >> $GITHUB_OUTPUT
       - name: Cache dependencies
         id: cache-deps
         uses: actions/cache@v3
