@@ -31,12 +31,24 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Download dependencies
-        run: git submodule update --init --recursive
       - name: Setup go
         uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GO_VERSION_SPECIFIER }}
+      - name: Cache dependencies
+        id: cache-deps
+        uses: actions/cache@v3
+        with:
+          key: ${{ runner.os }}-deps
+          path: |
+            libevent
+            openssl
+            tor
+            xz
+            zlib
+      - name: Download dependencies
+        if: ${{ steps.cache-deps.outputs.cache-hit != 'true' }}
+        run: git submodule update --init --recursive
       - name: Build dependencies
         run: go run build.go -verbose build-all
       - name: Upload tor binary
@@ -45,16 +57,6 @@ jobs:
           name: tor-${{ runner.os }}
           path:
             tor/src/app/tor
-      - name: Upload dependencies
-        uses: actions/upload-artifact@v3
-        with:
-          name: dep-${{ runner.os }}
-          path:
-            openssl
-            libevent
-            zlib
-            xz
-            tor
 
   test:
     name: Run tests on ${{ matrix.os }}
@@ -67,19 +69,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Download dependencies
-        uses: actions/download-artifact@v3
-        with:
-          name: dep-${{ runner.os }}
-          path:
-            openssl
-            libevent
-            zlib
-            xz
-            tor
       - name: Setup go
         uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GO_VERSION_SPECIFIER }}
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          key: ${{ runner.os }}-deps
+          path: |
+            libevent
+            openssl
+            tor
+            xz
+            zlib
       - name: Run tests
         run: go test .
