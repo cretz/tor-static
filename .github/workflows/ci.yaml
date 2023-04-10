@@ -64,11 +64,8 @@ jobs:
         run: |
           hash="$(sha256sum go.sum build.go build_test.go | cut -d ' ' -f1)"
           rebuild="true"
-          if [ -e PROJECT_HASH ]; then
-            if [ "$(cat PROJECT_HASH)" == "$hash" ]; then
-              rebuild="false";
-            else echo "$hash" > PROJECT_HASH; fi
-          else echo "$hash" > PROJECT_HASH; fi
+          [ "$(cat PROJECT_HASH)" == "$hash" ] && rebuild="false"
+          echo "$hash" > PROJECT_HASH
           echo "rebuild_needed=$rebuild" >> $GITHUB_OUTPUT
       - name: Build dependencies
         if: ${{ steps.check-rebuild.outputs.rebuild_needed != 'true' }}
