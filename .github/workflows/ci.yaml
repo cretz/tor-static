@@ -7,7 +7,7 @@ on:
     types: [created]
 
 env:
-  GO_VERSION_SPECIFIER: '^1.17.0'
+  GO_VERSION_SPECIFIER: '^1.20.0'
 
 jobs:
   build:

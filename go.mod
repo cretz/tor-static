@@ -1,6 +1,6 @@
 module github.com/cretz/tor-static
 
-go 1.18
+go 1.20
 
 require github.com/cretz/bine v0.2.0
 
