@@ -62,7 +62,7 @@ jobs:
       - name: Check if rebuild needed
         id: check-rebuild
         run: |
-          hash="$(sha256sum test | cut -d ' ' -f1)"
+          hash="$(sha256sum go.sum build.go build_test.go | cut -d ' ' -f1)"
           rebuild="true"
           if [ -e PROJECT_HASH ]; then
             if [ "$(cat PROJECT_HASH)" == "$hash" ]; then
