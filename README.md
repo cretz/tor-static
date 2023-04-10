@@ -5,11 +5,11 @@ This project helps compile Tor into a static lib for use in other projects.
 The dependencies are in this repository as submodules so this repository needs to be cloned with `--recursive`. The
 submodules are:
 
-* [OpenSSL](https://github.com/openssl/openssl/) - Checked out at tag `OpenSSL_1_0_2p`
-* [Libevent](https://github.com/libevent/libevent) - Checked out at tag `release-2.1.8-stable`
-* [zlib](https://github.com/madler/zlib) - Checked out at tag `v1.2.11`
-* [XZ Utils](https://git.tukaani.org/?p=xz.git) - Checked out at tag `v5.2.4`
-* [Tor](https://github.com/torproject/tor) - Checked out at tag `tor-0.3.5.7`
+* [OpenSSL](https://github.com/openssl/openssl/) - Checked out at tag `OpenSSL_1_1_1o`
+* [Libevent](https://github.com/libevent/libevent) - Checked out at tag `release-2.1.12-stable`
+* [zlib](https://github.com/madler/zlib) - Checked out at tag `v1.2.12`
+* [XZ Utils](https://git.tukaani.org/?p=xz.git) - Checked out at tag `v5.2.5`
+* [Tor](https://github.com/torproject/tor) - Checked out at tag `tor-0.4.7.7`
 
 Many many bugs and quirks were hit while deriving these steps. Also many other repos, mailing lists, etc were leveraged
 to get some of the pieces right. They are not listed here for brevity reasons.
@@ -55,7 +55,7 @@ Terminate and restart the shell if asked. Rerun this command as many times as ne
 up to date. Then in the same mingw-64 shell, run:
 
     pacman -Sy --needed base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
-                        git subversion mercurial \
+                        git subversion mercurial libtool automake autoconf automake-wrapper \
                         mingw-w64-i686-cmake mingw-w64-x86_64-cmake
 
 This will install all the tools needed for building and will take a while. Once complete, MinGW is now setup to build 
@@ -84,7 +84,7 @@ extension, prefixed with `-l`) as might be used in `ld`.
 The OS-specific system libs that have to be referenced (i.e. `-l<libname>`) are:
 
 * Linux/macOS - `m`
-* Windows (MinGW) - `ws2_32`, `crypt32`, and `gdi32`
+* Windows (MinGW) - `ws2_32`, `crypt32`, `gdi32`, `iphlpapi`, and `shlwapi`
 
 The OS-specific system libs that have to be explicitly statically linked (i.e. `-Wl,-Bstatic -l<libname>`) are:
 
