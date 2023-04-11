@@ -19,10 +19,13 @@ jobs:
         include:
          #- runner-os: ubuntu-latest
          #  triple: x86_64-unknown-linux-gnu
+         #  use-caching: true
          #- runner-os: macos-latest
          #  triple: x86_64-apple-darwin
+         #  use-caching: true
           - runner-os: windows-latest
             triple: x86_64-pc-windows-gnu
+            use-caching: false
     steps:
       # Download dependencies depending on platform
       - name: Download build tools [linux]
@@ -57,9 +60,11 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION_SPECIFIER }}
       - name: Compute cache key
+        if: matrix.use-caching
         id: cache-data
-        run: echo "key=${{ runner.os }}-deps-$(git submodule status | sha256sum | cut -d ' ' -f1)" | tee -a $GITHUB_OUTPUT
+        run: echo "key=${{ runner.os }}-deps-$(git submodule status | sha256sum | cut -d ' ' -f1)" >> $GITHUB_OUTPUT
       - name: Cache dependencies
+        if: matrix.use-caching
         id: cache-deps
         uses: actions/cache@v3
         with:
@@ -75,6 +80,7 @@ jobs:
         if: ${{ steps.cache-deps.outputs.cache-hit != 'true' }}
         run: git submodule update --init --recursive
       - name: Check if rebuild needed
+        if: matrix.use-caching
         id: check-rebuild
         run: |
           hash="$(sha256sum go.sum build.go build_test.go | cut -d ' ' -f1)"
@@ -99,7 +105,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+         #- runner-os: ubuntu-latest
+         #  triple: x86_64-unknown-linux-gnu
+         #  use-caching: true
+         #- runner-os: macos-latest
+         #  triple: x86_64-apple-darwin
+         #  use-caching: true
+          - runner-os: windows-latest
+            triple: x86_64-pc-windows-gnu
+            use-caching: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -108,9 +123,11 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION_SPECIFIER }}
       - name: Compute cache key
+        if: matrix.use-caching
         id: cache-data
         run: echo "key=${{ runner.os }}-deps-$(git submodule status | sha256sum | cut -d ' ' -f1)" >> $GITHUB_OUTPUT
       - name: Cache dependencies
+        if: matrix.use-caching
         id: cache-deps
         uses: actions/cache@v3
         with:
