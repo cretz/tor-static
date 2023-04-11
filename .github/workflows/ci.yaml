@@ -98,7 +98,7 @@ jobs:
             tor/src/app/tor
 
   test:
-    name: Tests
+    name: Tests ${{ matrix.triple }}
     needs: build
     runs-on: ${{ matrix.os }}
     strategy:
