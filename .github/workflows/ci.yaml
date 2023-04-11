@@ -28,13 +28,13 @@ jobs:
             use-caching: false
     steps:
       # Download dependencies depending on platform
-      - name: Download build tools [linux]
-        if: runner.os == 'Linux'
+      - name: install build tools [linux]
+        if: runner.os == 'linux'
         run: sudo apt-get install build-essential libtool autopoint
-      - name: Download build tools [mac]
+      - name: Install build tools [mac]
         if: runner.os == 'macOS'
         run: brew install libtool automake gettext
-      - name: Download build tools [windows]
+      - name: Install build tools [windows]
         if: runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
         with:
