@@ -115,6 +115,31 @@ jobs:
             triple: x86_64-pc-windows-gnu
             use-caching: false
     steps:
+      - name: install build tools [linux]
+        if: runner.os == 'linux'
+        run: sudo apt-get install build-essential libtool autopoint
+      - name: Install build tools [mac]
+        if: runner.os == 'macOS'
+        run: brew install libtool automake gettext
+      - name: Install build tools [windows]
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install:
+            base-devel
+            git
+            subversion
+            mercurial
+            libtool
+            automake
+            autoconf
+            automake-wrapper
+            mingw-w64-i686-toolchain 
+            mingw-w64-x86_64-toolchain
+            mingw-w64-i686-cmake
+            mingw-w64-x86_64-cmake
+
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Setup go
