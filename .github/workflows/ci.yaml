@@ -31,7 +31,6 @@ jobs:
       - name: Download build tools [mac]
         if: runner.os == 'macOS'
         run: brew install libtool automake gettext
-        uses: egor-tensin/setup-mingw@v2
       - name: Download build tools [windows]
         if: runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
