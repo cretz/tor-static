@@ -27,7 +27,6 @@ jobs:
             triple: x86_64-pc-windows-gnu
             use-caching: false
     steps:
-      # Download dependencies depending on platform
       - name: install build tools [linux]
         if: runner.os == 'linux'
         run: sudo apt-get install build-essential libtool autopoint
