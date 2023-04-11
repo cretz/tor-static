@@ -31,15 +31,25 @@ jobs:
       - name: Download build tools [mac]
         if: runner.os == 'macOS'
         run: brew install libtool automake gettext
-      - name: Setup MinGW [windows]
-        if: runner.os == 'Windows'
         uses: egor-tensin/setup-mingw@v2
       - name: Download build tools [windows]
         if: runner.os == 'Windows'
-        run: pacman -Sy --needed \
-          base-devel mingw-w64-i686-toolchain  mingw-w64-x86_64-toolchain git \
-          subversion mercurial libtool automake autoconf automake-wrapper \
-          mingw-w64-i686-cmake mingw-w64-x86_64-cmake
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install:
+            base-devel
+            git
+            subversion
+            mercurial
+            libtool
+            automake
+            autoconf
+            automake-wrapper
+            mingw-w64-i686-toolchain 
+            mingw-w64-x86_64-toolchain
+            mingw-w64-i686-cmake
+            mingw-w64-x86_64-cmake
 
       - name: Checkout repository
         uses: actions/checkout@v3
