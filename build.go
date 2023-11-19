@@ -115,7 +115,7 @@ func build(folder string) error {
 			{"sh", "./config", "--prefix=" + prefix, "--openssldir=" + prefix, "no-shared", "no-dso", "no-zlib"},
 			{"make", "depend"},
 			{"make", numJobs},
-			{"make", "install"},
+			{"make", "install_sw"},
 		}
 		if runtime.GOOS == "windows" {
 			cmds[0] = append(cmds[0], "mingw64")
