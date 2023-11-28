@@ -1,0 +1,166 @@
+name: Build static binaries
+
+on:
+  push:
+  pull_request:
+  release:
+    types: [created]
+
+env:
+  GO_VERSION_SPECIFIER: '^1.20.0'
+
+jobs:
+  build:
+    name: Build for ${{ matrix.triple }}
+    runs-on: ${{ matrix.runner-os}}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner-os: ubuntu-latest
+            triple: x86_64-unknown-linux-gnu
+            use-caching: true
+          - runner-os: macos-latest
+            triple: x86_64-apple-darwin
+            use-caching: true
+          - runner-os: windows-latest
+            triple: x86_64-pc-windows-gnu
+            use-caching: false
+    steps:
+      - name: install build tools [linux]
+        if: runner.os == 'linux'
+        run: sudo apt-get install build-essential libtool autopoint
+      - name: Install build tools [mac]
+        if: runner.os == 'macOS'
+        run: brew install libtool automake gettext
+      - name: Install build tools [windows]
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install:
+            base-devel
+            git
+            subversion
+            mercurial
+            libtool
+            automake
+            autoconf
+            automake-wrapper
+            mingw-w64-i686-toolchain 
+            mingw-w64-x86_64-toolchain
+            mingw-w64-i686-cmake
+            mingw-w64-x86_64-cmake
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION_SPECIFIER }}
+      - name: Compute cache key
+        if: matrix.use-caching
+        id: cache-data
+        run: echo "key=${{ runner.os }}-deps-$(git submodule status | sha256sum | cut -d ' ' -f1)" >> $GITHUB_OUTPUT
+      - name: Cache dependencies
+        if: matrix.use-caching
+        id: cache-deps
+        uses: actions/cache@v3
+        with:
+          key: ${{ steps.cache-data.outputs.key }}
+          path: |
+            PROJECT_HASH
+            libevent
+            openssl
+            tor
+            xz
+            zlib
+      - name: Download dependencies
+        if: ${{ steps.cache-deps.outputs.cache-hit != 'true' }}
+        run: git submodule update --init --recursive
+      - name: Check if rebuild needed
+        if: matrix.use-caching
+        id: check-rebuild
+        run: |
+          hash="$(sha256sum go.sum build.go build_test.go | cut -d ' ' -f1)"
+          rebuild="true"
+          [ "$(cat PROJECT_HASH)" == "$hash" ] && rebuild="false"
+          echo "$hash" > PROJECT_HASH
+          echo "rebuild_needed=$rebuild" >> $GITHUB_OUTPUT
+      - name: Build dependencies
+        if: ${{ steps.check-rebuild.outputs.rebuild_needed != 'true' }}
+        run: go run build.go -verbose build-all
+      - name: Upload tor binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: tor-${{ runner.os }}
+          path:
+            tor/src/app/tor
+
+  test:
+    name: Tests ${{ matrix.triple }}
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner-os: ubuntu-latest
+            triple: x86_64-unknown-linux-gnu
+            use-caching: true
+          - runner-os: macos-latest
+            triple: x86_64-apple-darwin
+            use-caching: true
+          - runner-os: windows-latest
+            triple: x86_64-pc-windows-gnu
+            use-caching: false
+    steps:
+      - name: install build tools [linux]
+        if: runner.os == 'linux'
+        run: sudo apt-get install build-essential libtool autopoint
+      - name: Install build tools [mac]
+        if: runner.os == 'macOS'
+        run: brew install libtool automake gettext
+      - name: Install build tools [windows]
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install:
+            base-devel
+            git
+            subversion
+            mercurial
+            libtool
+            automake
+            autoconf
+            automake-wrapper
+            mingw-w64-i686-toolchain 
+            mingw-w64-x86_64-toolchain
+            mingw-w64-i686-cmake
+            mingw-w64-x86_64-cmake
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION_SPECIFIER }}
+      - name: Compute cache key
+        if: matrix.use-caching
+        id: cache-data
+        run: echo "key=${{ runner.os }}-deps-$(git submodule status | sha256sum | cut -d ' ' -f1)" >> $GITHUB_OUTPUT
+      - name: Cache dependencies
+        if: matrix.use-caching
+        id: cache-deps
+        uses: actions/cache@v3
+        with:
+          key: ${{ steps.cache-data.outputs.key }}
+          path: |
+            libevent
+            openssl
+            tor
+            xz
+            zlib
+      - name: Run tests
+        run: go test .
