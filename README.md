@@ -5,11 +5,11 @@ This project helps compile Tor into a static lib for use in other projects.
 The dependencies are in this repository as submodules so this repository needs to be cloned with `--recursive`. The
 submodules are:
 
-* [OpenSSL](https://github.com/openssl/openssl/) - Checked out at tag `OpenSSL_1_1_1o`
-* [Libevent](https://github.com/libevent/libevent) - Checked out at tag `release-2.1.12-stable`
-* [zlib](https://github.com/madler/zlib) - Checked out at tag `v1.2.12`
-* [XZ Utils](https://git.tukaani.org/?p=xz.git) - Checked out at tag `v5.2.5`
-* [Tor](https://github.com/torproject/tor) - Checked out at tag `tor-0.4.7.7`
+- [OpenSSL](https://github.com/openssl/openssl/) - Checked out at tag `OpenSSL_1_1_1w`
+- [Libevent](https://github.com/libevent/libevent) - Checked out at tag `release-2.1.12-stable`
+- [zlib](https://github.com/madler/zlib) - Checked out at tag `v1.3.1`
+- [XZ Utils](https://git.tukaani.org/?p=xz.git) - Checked out at tag `v5.6.2`
+- [Tor](https://github.com/torproject/tor) - Checked out at tag `tor-0.4.8.12`
 
 Many many bugs and quirks were hit while deriving these steps. Also many other repos, mailing lists, etc were leveraged
 to get some of the pieces right. They are not listed here for brevity reasons.
@@ -27,20 +27,21 @@ All platforms need Go installed and on the PATH.
 
 Need:
 
-* Normal build tools (e.g. `sudo apt-get install build-essential`)
-* Libtool (e.g. `sudo apt-get install libtool`)
-* autopoint (e.g. `sudo apt-get install autopoint`)
+- Normal build tools (e.g. `sudo apt-get install build-essential`)
+- Libtool (e.g. `sudo apt-get install libtool`)
+- autopoint (e.g. `sudo apt-get install autopoint`)
 
 #### macOS
 
 Need:
 
-* Normal build tools (e.g. Xcode command line tools)
-* Libtool (e.g. `brew install libtool`)
-* Autoconf and Automake (e.g. `brew install automake`)
-* autopoint (can be found in gettext, e.g. `brew install gettext`)
-  * Note, by default this is assumed to be at `/usr/local/opt/gettext/bin`. Use `-autopoint-path` to change it.
-* po4a (brew install po4a)
+- Normal build tools (e.g. Xcode command line tools)
+- go (e.g. `brew install go`)
+- Libtool (e.g. `brew install libtool`)
+- Autoconf and Automake (e.g. `brew install automake`)
+- autopoint (can be found in gettext, e.g. `brew install gettext`)
+  - Note, by default this is assumed to be at `/usr/local/opt/gettext/bin`. Use `-autopoint-path` to change it.
+- po4a (e.g. `brew install po4a`)
 
 #### Windows
 
@@ -84,9 +85,9 @@ extension, prefixed with `-l`) as might be used in `ld`.
 
 The OS-specific system libs that have to be referenced (i.e. `-l<libname>`) are:
 
-* Linux/macOS - `m`
-* Windows (MinGW) - `ws2_32`, `crypt32`, `gdi32`, `iphlpapi`, and `shlwapi`
+- Linux/macOS - `m`
+- Windows (MinGW) - `ws2_32`, `crypt32`, `gdi32`, `iphlpapi`, and `shlwapi`
 
 The OS-specific system libs that have to be explicitly statically linked (i.e. `-Wl,-Bstatic -l<libname>`) are:
 
-* Windows (MinGW) - `pthread`
+- Windows (MinGW) - `pthread`
