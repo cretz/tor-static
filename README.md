@@ -40,6 +40,7 @@ Need:
 * Autoconf and Automake (e.g. `brew install automake`)
 * autopoint (can be found in gettext, e.g. `brew install gettext`)
   * Note, by default this is assumed to be at `/usr/local/opt/gettext/bin`. Use `-autopoint-path` to change it.
+* po4a (brew install po4a)
 
 #### Windows
 
@@ -58,7 +59,7 @@ up to date. Then in the same mingw-64 shell, run:
                         git subversion mercurial libtool automake autoconf automake-wrapper \
                         mingw-w64-i686-cmake mingw-w64-x86_64-cmake
 
-This will install all the tools needed for building and will take a while. Once complete, MinGW is now setup to build 
+This will install all the tools needed for building and will take a while. Once complete, MinGW is now setup to build
 the dependencies.
 
 ### Executing the build
