@@ -12,4 +12,4 @@
 	url = https://git.tukaani.org/xz.git
 [submodule "tor"]
 	path = tor
-	url = https://github.com/torproject/tor.git
+	url = https://gitlab.torproject.org/tpo/core/tor.git
