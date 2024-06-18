@@ -25,14 +25,17 @@ var (
 	autopointPath string
 	folders       = []string{"_openssl", "libevent", "zlib", "xz", "tor"}
 	absCurrDir    = getAbsCurrDir()
-	numJobs       = fmt.Sprintf("-j%d", runtime.NumCPU())
+	numJobsInt    = runtime.NumCPU()
+	numJobs       = ""
 )
 
 func main() {
 	flag.BoolVar(&verbose, "verbose", false, "Whether to show command output")
 	flag.StringVar(&host, "host", "", "Host option, useful for cross-compilation")
 	flag.StringVar(&autopointPath, "autopoint-path", "/usr/local/opt/gettext/bin", "OSX: Directory that contains autopoint binary")
+	flag.IntVar(&numJobsInt, "j", runtime.NumCPU(), "Number of jobs to run in parallel")
 	flag.Parse()
+	numJobs = fmt.Sprintf("-j%d", numJobsInt)
 	if len(flag.Args()) != 1 {
 		log.Fatal("Missing command. Can be build-all, build-<folder>, clean-all, clean-<folder>, show-libs, or package-libs")
 	}
