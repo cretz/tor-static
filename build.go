@@ -188,7 +188,7 @@ func build(folder string) error {
 			env = []string{"PATH=" + autopointPath + ":" + os.Getenv("PATH")}
 		}
 		cmds := [][]string{
-			{"sh", "-l", "./autogen.sh"},
+			{"sh", "-l", "./autogen.sh", "--no-po4a"},
 			{"sh", "./configure", "--prefix=" + pwd + "/dist", "--disable-shared", "--enable-static",
 				"--disable-doc", "--disable-scripts", "--disable-xz", "--disable-xzdec", "--disable-lzmadec",
 				"--disable-lzmainfo", "--disable-lzma-links"},
@@ -210,7 +210,8 @@ func build(folder string) error {
 			"--enable-static-libevent", "--with-libevent-dir=" + pwd + "/../libevent/dist",
 			"--enable-static-openssl", "--with-openssl-dir=" + pwd + "/../_openssl/dist",
 			"--enable-static-zlib", "--with-zlib-dir=" + pwd + "/../zlib/dist",
-			"--disable-systemd", "--disable-lzma", "--disable-seccomp"}
+			"--disable-systemd", "--disable-lzma", "--disable-seccomp",
+			"--disable-html-manual", "--disable-manpage"}
 
 		if host != "" {
 			torConf = append(torConf, "--host="+host)
