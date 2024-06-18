@@ -19,12 +19,14 @@ import (
 	"strings"
 )
 
-var verbose bool
-var host string
-var autopointPath string
-var folders = []string{"openssl", "libevent", "zlib", "xz", "tor"}
-var absCurrDir = getAbsCurrDir()
-var numJobs = fmt.Sprintf("-j%d", runtime.NumCPU())
+var (
+	verbose       bool
+	host          string
+	autopointPath string
+	folders       = []string{"_openssl", "libevent", "zlib", "xz", "tor"}
+	absCurrDir    = getAbsCurrDir()
+	numJobs       = fmt.Sprintf("-j%d", runtime.NumCPU())
+)
 
 func main() {
 	flag.BoolVar(&verbose, "verbose", false, "Whether to show command output")
@@ -109,7 +111,7 @@ func build(folder string) error {
 			}
 		}
 		return nil
-	case "openssl":
+	case "_openssl":
 		prefix := pwd + "/dist"
 		cmds := [][]string{
 			{"sh", "./config", "--prefix=" + prefix, "--openssldir=" + prefix, "no-shared", "no-dso", "no-zlib"},
@@ -158,7 +160,7 @@ func build(folder string) error {
 			{"sh", "-l", "./autogen.sh"},
 			{"sh", "./configure", "--prefix=" + pwd + "/dist",
 				"--disable-shared", "--enable-static", "--with-pic", "--disable-samples", "--disable-libevent-regress",
-				"CPPFLAGS=-I../openssl/dist/include", "LDFLAGS=-L../openssl/dist/lib"},
+				"CPPFLAGS=-I../_openssl/dist/include", "LDFLAGS=-L../_openssl/dist/lib"},
 			{"make", numJobs},
 			{"make", "install"},
 		}
@@ -206,7 +208,7 @@ func build(folder string) error {
 		torConf = []string{"sh", "./configure", "--prefix=" + pwd + "/dist",
 			"--disable-gcc-hardening", "--disable-system-torrc", "--disable-asciidoc",
 			"--enable-static-libevent", "--with-libevent-dir=" + pwd + "/../libevent/dist",
-			"--enable-static-openssl", "--with-openssl-dir=" + pwd + "/../openssl/dist",
+			"--enable-static-openssl", "--with-openssl-dir=" + pwd + "/../_openssl/dist",
 			"--enable-static-zlib", "--with-zlib-dir=" + pwd + "/../zlib/dist",
 			"--disable-systemd", "--disable-lzma", "--disable-seccomp"}
 
@@ -235,7 +237,7 @@ func build(folder string) error {
 			{"make", "install"},
 		})
 	default:
-		return fmt.Errorf("Unrecognized folder: %v", folder)
+		return fmt.Errorf("unrecognized folder: %v", folder)
 	}
 }
 
@@ -255,9 +257,9 @@ func clean(folder string) (err error) {
 		makefile := "Makefile"
 		switch folder {
 		// OpenSSL needs to have the dist folder removed first
-		case "openssl":
-			if err := os.RemoveAll("openssl/dist/lib"); err != nil {
-				return fmt.Errorf("Unable to remove openssl/dist/lib: %v", err)
+		case "_openssl":
+			if err := os.RemoveAll("_openssl/dist/lib"); err != nil {
+				return fmt.Errorf("unable to remove _openssl/dist/lib: %v", err)
 			}
 		// Zlib needs to have a prefix and needs a special windows makefile
 		case "zlib":
@@ -334,7 +336,7 @@ func getLibSets() ([]*libSet, error) {
 		&libSet{"libevent/dist/lib", []string{"event"}},
 		&libSet{"xz/dist/lib", []string{"lzma"}},
 		&libSet{"zlib/dist/lib", []string{"z"}},
-		&libSet{"openssl/dist/lib", []string{"ssl", "crypto"}},
+		&libSet{"_openssl/dist/lib", []string{"ssl", "crypto"}},
 	)
 	return libSets, nil
 }
