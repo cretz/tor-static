@@ -1,5 +1,5 @@
 [submodule "openssl"]
-	path = openssl
+	path = _openssl
 	url = https://github.com/openssl/openssl.git
 [submodule "libevent"]
 	path = libevent
